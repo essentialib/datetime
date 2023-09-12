@@ -1,0 +1,54 @@
+{
+    "name": "ko_KR",
+    "dayNames": ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"],
+    "shorterDayNames": ["일", "월", "화", "수", "목", "금", "토"],
+    "shortestDayNames": ["일", "월", "화", "수", "목", "금", "토"],
+    "monthNames": ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"],
+    "shortDayNames": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+    "amPrefix": "오전",
+    "pmPrefix": "오후",
+    "dateElementOrder": "ymd",
+    "formats": {
+        "shortDate": "yyyy-mm-dd",
+        "longDate": "yyyy년 m월 d일",
+        "shoreTime": "tt h:mm",
+        "longTime": "tt h:mm:ss",
+        "fullDatetime": "yyyy년 m월 d일 tt h:mm:ss"
+    },
+
+    "sticky": {
+        "front": {
+            "매": "every",
+            "격": "bi"
+        },
+        "back": {
+            "부터": "from"
+        }
+    },
+    
+    "time": {
+        "아침": "morning",
+        "정오": "noon",
+        "밤": "night",
+        "저녁": "evening",
+        "자정": "midnight"
+    },
+
+    "magic": {
+        "약": "about",
+        "전": "ago",
+        "후": "after",
+        "부터": "from",
+        "까지": "to",
+        "시작": "begin",
+        "끝": "done",
+        
+        "": "quarter",
+        "반": "half",
+        "": "hourly",
+        "": "daily",
+        "": "weekly",
+        "": "monthly",
+        "": "yearly"
+    }
+}

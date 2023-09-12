@@ -1,0 +1,91 @@
+{
+  "name": "en_US",
+  "dayNames": [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday"
+  ],
+  "shorterDayNames": [
+    "Sun",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat"
+  ],
+  "shortestDayNames": [
+    "Su",
+    "Mo",
+    "Tu",
+    "We",
+    "Th",
+    "Fr",
+    "Sa"
+  ],
+  "monthNames": [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ],
+  "shortDayNames": [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+  ],
+  "amPrefix": "AM",
+  "pmPrefix": "PM",
+  "dateElementOrder": "mdy",
+  "formats": {
+    "shortDate": "M/d/yyyy",
+    "longDate": "MMMM dd, yyyy",
+    "shoreTime": "h:mm tt",
+    "longTime": "h:mm:ss tt",
+    "fullDatetime": "MMMM dd, yyyy h:mm:ss tt"
+  },
+  "magic": {
+    "about": "about",
+    "ago": "ago",
+    "after": "after",
+    "every": "every",
+    "from": "from",
+    "to": "to",
+    "begin": "begin",
+    "done": "done",
+    "morning": "morning",
+    "noon": "noon",
+    "night": "night",
+    "midnight": "midnight",
+    "evening": "evening",
+    "bi": "bi",
+    "quarter": "quarter",
+    "half": "half",
+    "hourly": "hourly",
+    "daily": "daily",
+    "weekly": "weekly",
+    "monthly": "monthly",
+    "yearly": "yearly"
+  }
+}
