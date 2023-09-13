@@ -1,8 +1,22 @@
 const information = {
-    months: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    leapMonths: [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    months: [null, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    leapMonths: [null, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
     isLeapYear: (year) => year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
 }
+
+const propertyGetSet = (that, key, getter, setter) => {
+    Object.defineProperty(that, key, {
+        get: getter,
+        set: setter
+    });
+};
+
+const propertyGet = (that, key, getter) => {
+    Object.defineProperty(that, key, {
+        get: getter,
+        configurable: false
+    });
+};
 
 /**
  * @property week
@@ -112,6 +126,7 @@ function Datetime(year, month, day, hour, minute, second, millisecond) {
             this.year = date.getFullYear();
             this.month = date.getMonth() + 1;
             this.day = date.getDate();
+            this.weekday = date.getDay();
             this.hour = date.getHours();
             this.minute = date.getMinutes();
             this.second = date.getSeconds();
@@ -123,6 +138,7 @@ function Datetime(year, month, day, hour, minute, second, millisecond) {
             this.year = date.year;
             this.month = date.month;
             this.day = date.day;
+            this.weekday = date.weekday;
             this.hour = date.hour;
             this.minute = date.minute;
             this.second = date.second;
@@ -131,7 +147,7 @@ function Datetime(year, month, day, hour, minute, second, millisecond) {
         else if (typeof arguments[0] === 'object' && !Array.isArray(arguments[0]) && arguments[0] != null) {
             const date = arguments[0];
 
-            this.year = date.year || new Date().getFullYear();
+            this.year = date.year || 1;
             this.month = date.month || 1;
             this.day = date.day || 1;
             this.hour = date.hour || 0;
@@ -144,7 +160,7 @@ function Datetime(year, month, day, hour, minute, second, millisecond) {
         }
     }
     else {
-        this.year = year || new Date().getFullYear();
+        this.year = year || 1;
         this.month = month || 1;
         this.day = day || 1;
         this.hour = hour || 0;
@@ -153,7 +169,63 @@ function Datetime(year, month, day, hour, minute, second, millisecond) {
         this.millisecond = millisecond || 0;
     }
 
-    // todo: 제한 넘어가면 그만큼 받아올림
+    if (!('weekday' in this)) {
+        propertyGet(this, 'weekday', () => {
+            // doomsday algorithm
+            const century = Math.floor(this.year / 100);
+            const year = this.year % 100;
+            const baseWeekDays = [2, 0, 5, 3]
+            const baseWeekDay = baseWeekDays[century % 4];
+            const a = Math.floor(year / 12);
+            const b = year % 12;
+            const c = Math.floor(b / 4);
+            const doomsDay = (baseWeekDay + a + b + c) % 7;
+            const sameDays = [
+                null,
+                3 + (information.isLeapYear(this.year) ? 1 : 0),
+                28 + (information.isLeapYear(this.year) ? 1 : 0),
+                0, 4, 9, 6, 11, 8, 5, 10, 7, 12
+            ];
+            const plusDay = (this.day - sameDays[this.month]) % 7;
+
+            return (doomsDay + plusDay + 7) % 7;
+        });
+    }
+
+    const monthDays = information.isLeapYear(this.year) ? information.leapMonths : information.months;
+    const monthDay = monthDays[this.month];
+
+    if (this.millisecond >= 1000) {
+        this.second += Math.floor(this.millisecond / 1000);
+        this.millisecond %= 1000;
+    }
+
+    if (this.second >= 60) {
+        this.minute += Math.floor(this.second / 60);
+        this.second %= 60;
+    }
+
+    if (this.minute >= 60) {
+        this.hour += Math.floor(this.minute / 60);
+        this.minute %= 60;
+    }
+
+    if (this.hour >= 24) {
+        this.day += Math.floor(this.hour / 24);
+        this.hour %= 24;
+    }
+
+    if (this.day > monthDay) {
+        for (let i = this.month; this.day > monthDays[i]; i = i % 12 + 1) {
+            this.day -= monthDays[i];
+            this.month += 1;
+        }
+    }
+
+    if (this.month > 12) {
+        this.year += Math.floor(this.month / 12);
+        this.month %= 12;
+    }
 }
 
 Datetime = Object.assign(Datetime, {
@@ -188,49 +260,83 @@ Datetime = Object.assign(Datetime, {
      */
     now() {
         return new Datetime(new Date());
+    },
+
+    leapYears(year1, year2) {
+        let count = 0;
+        for (let y = year1; y <= year2; y++) {
+            if (information.isLeapYear(y)) count++;
+        }
+
+        return count;
     }
 });
 
 Datetime.prototype = {
     toString(globalCode) {
-        globalCode ||= "en_US";
+        globalCode ||= "en-US";
 
-        const cultureInfo = require(`globalization/${globalCode}`);
-        let format = cultureInfo['formats']['fullDatetime'];
-        // MMMM dd, yyyy h:mm:ss tt
+        const cultureInfo = require(`./globalization/${globalCode}.json`);
+        let format = cultureInfo['formats']['full'];
 
-        return format
-            .replace('yyyy', this.year.toString().padStart(4, '0'))
-            .replace('MMMM', cultureInfo['monthNames'][this.month - 1])
-            .replace('MMM', cultureInfo['monthNamesShort'][this.month - 1])
-
-
-
-        const _year = this.year.toString().padStart(4, '0');
-        const _month = this.month.toString().padStart(2, '0');
-        const _day = this.day.toString().padStart(2, '0');
-        const _hour = this.hour.toString().padStart(2, '0');
-        const _minute = this.minute.toString().padStart(2, '0');
-        const _second = this.second.toString().padStart(2, '0');
-        const _millisecond = this.millisecond.toString().padStart(3, '0');
-
-        return `${_year}-${_month}-${_day} ${_hour}:${_minute}:${_second}.${_millisecond}`;
+        return format.replace(/ss?s?|mm?|hh?|ii?|t|DD?|WW?|MM?M?M?|YY?/g, (match) => {
+            switch (match) {
+                case 's':
+                    return this.second;
+                case 'ss':
+                    return this.second.toString().padStart(2, '0');
+                case 'sss':
+                    return this.millisecond;
+                case 'm':
+                    return this.minute;
+                case 'mm':
+                    return this.minute.toString().padStart(2, '0');
+                case 'h':
+                    return this.hour % 12 || 12;
+                case 'hh':
+                    return (this.hour % 12 || 12).toString().padStart(2, '0');
+                case 'i':
+                    return this.hour;
+                case 'ii':
+                    return this.hour.toString().padStart(2, '0');
+                case 't':
+                    return cultureInfo['t'][this.hour < 12 ? 0 : 1];
+                case 'D':
+                    return this.day;
+                case 'DD':
+                    return this.day.toString().padStart(2, '0');
+                case 'W':
+                    return cultureInfo['W'][this.weekday];
+                case 'WW':
+                    return cultureInfo['WW'][this.weekday];
+                case 'M':
+                    return this.month;
+                case 'MM':
+                    return this.month.toString().padStart(2, '0');
+                case 'MMM':
+                    return cultureInfo['MMM'][this.month - 1];
+                case 'MMMM':
+                    return cultureInfo['MMMM'][this.month - 1];
+                case 'Y':
+                    return this.year % 100;
+                case 'YY':
+                    return this.year;
+                default:
+                    throw new Error(`unknown format ${match}`);
+            }
+        });
     },
 
-    toISOString() {
-        const _year = this.year.toString().padStart(4, '0');
-        const _month = this.month.toString().padStart(2, '0');
-        const _day = this.day.toString().padStart(2, '0');
-        const _hour = this.hour.toString().padStart(2, '0');
-        const _minute = this.minute.toString().padStart(2, '0');
-        const _second = this.second.toString().padStart(2, '0');
-        const _millisecond = this.millisecond.toString().padStart(3, '0');
+    isLeapYear() {
+        return information.isLeapYear(this.year);
+    },
 
-        return `${_year}-${_month}-${_day}T${_hour}:${_minute}:${_second}.${_millisecond}Z`;
+    monthRange() {
+        return information.isLeapYear(this.year) ? information.leapMonths[this.month] : information.months[this.month];
     },
 
     toNumber() {
-
+        return ((((this.year * 365 + this.day + Datetime.leapYears(0, this.year)) * 24 + this.hour) * 60 + this.minute) * 60 + this.second) * 1000 + this.millisecond;
     },
 
     set(object) {
@@ -285,10 +391,7 @@ Datetime.prototype = {
             throw new TypeError('sub argument must be Datetime');
         }
 
-        let amount;
-
-
-        return new TimeDelta({ millisecond: amount });
+        return new TimeDelta({ millisecond: this.toNumber() - datetime.toNumber() });
     }
 };
 

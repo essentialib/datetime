@@ -5,13 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f77c5b9d-9376-471a-a2b3-64fd056e224b" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/globalization/en-US.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/globalization/ko-KR.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/globalization/en_US.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/globalization/en_US.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/globalization/ko_KR.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/globalization/ko_KR.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/datetime.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/datetime.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/globalization/en_US.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/globalization/ko_KR.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/timedelta.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,7 +62,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "inlay.hints",
+    "settings.editor.selected.configurable": "preferences.sourceCode.JSON",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -70,6 +72,23 @@
       <recent name="D:\repos\essentialib\datetime" />
       <recent name="D:\repos\essentialib\datetime\src\modules" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="run" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="run" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.run" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -82,7 +101,7 @@
       <workItem from="1691802106331" duration="4000" />
       <workItem from="1694482763342" duration="10222000" />
       <workItem from="1694560072181" duration="1618000" />
-      <workItem from="1694569349417" duration="7070000" />
+      <workItem from="1694569349417" duration="17875000" />
     </task>
     <servers />
   </component>

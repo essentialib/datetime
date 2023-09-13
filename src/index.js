@@ -2,8 +2,11 @@ const { Datetime } = require('./datetime');
 
 const d1 = Datetime.now();
 const d2 = new Datetime(2006, 2, 24, 7, 30, 56);
-console.log(`d1: ${d1}`);
-console.log(`d2: ${d2}`);
-console.log(`age: ${d1.sub(d2)}`);
+const d1_2 = new Date();
+const d2_2 = new Date(2006, 1, 24, 7, 30, 56);
+// fixme: 이 오차는 무엇?
+console.log(`datetime: ${d1.toNumber() - d2.toNumber()}`);
+console.log(`date: ${d1_2.getTime() - d2_2.getTime()}`);
 
-console.log((new Date()).getTime() - (new Date(2006, 3, 24, 7, 30, 56)).getTime());
+// console.log(`now: ${Datetime.now().toNumber()}`);
+// console.log(`now: ${(new Date()).getTime() - (new Date(1, 0, 1, 0, 0, 0)).getTime()}`);
