@@ -28,7 +28,7 @@ const propertyGet = (that, key, getter) => {
  * @return {TimeDelta}
  * @constructor
  */
-function TimeDelta(week, day, hour, minute, second, millisecond) {
+function TimeDelta( day, hour, minute, second, millisecond) {
     if (!(this instanceof TimeDelta)) {
         throw new TypeError('TimeDelta must be called with new');
     }
@@ -37,7 +37,6 @@ function TimeDelta(week, day, hour, minute, second, millisecond) {
         if (arguments[0] instanceof TimeDelta) {
             const date = arguments[0];
 
-            this.week = date.week;
             this.day = date.day;
             this.hour = date.hour;
             this.minute = date.minute;
@@ -47,7 +46,6 @@ function TimeDelta(week, day, hour, minute, second, millisecond) {
         else if (typeof arguments[0] === 'object' && !Array.isArray(arguments[0]) && arguments[0] != null) {
             const date = arguments[0];
 
-            this.week = date.week || 0;
             this.day = date.day || 0;
             this.hour = date.hour || 0;
             this.minute = date.minute || 0;
@@ -59,7 +57,6 @@ function TimeDelta(week, day, hour, minute, second, millisecond) {
         }
     }
     else {
-        this.week = week || 0;
         this.day = day || 0;
         this.hour = hour || 0;
         this.minute = minute || 0;
@@ -67,7 +64,7 @@ function TimeDelta(week, day, hour, minute, second, millisecond) {
         this.millisecond = millisecond || 0;
     }
 
-    let amount = ((((this.week * 7 + this.day) * 24 + this.hour) * 60 + this.minute) * 60 + this.second) * 1000 + this.millisecond;
+    let amount = (((this.day * 24 + this.hour) * 60 + this.minute) * 60 + this.second) * 1000 + this.millisecond;
 
     this.millisecond = amount % 1000;
     amount = Math.floor(amount / 1000);
@@ -77,9 +74,7 @@ function TimeDelta(week, day, hour, minute, second, millisecond) {
     amount = Math.floor(amount / 60);
     this.hour = amount % 24;
     amount = Math.floor(amount / 24);
-    this.day = amount % 7;
-    amount = Math.floor(amount / 7);
-    this.week = amount;
+    this.day = amount;
 }
 
 TimeDelta = Object.assign(TimeDelta, {
@@ -89,7 +84,6 @@ TimeDelta.prototype = {
     toString() {
         let ret = 'TimeDelta(';
 
-        if (this.week) ret += `week=${this.week}, `;
         if (this.day) ret += `day=${this.day}, `;
         if (this.hour) ret += `hour=${this.hour}, `;
         if (this.minute) ret += `minute=${this.minute}, `;
@@ -100,7 +94,7 @@ TimeDelta.prototype = {
     },
 
     toNumber() {
-        return ((((this.week * 7 + this.day) * 24 + this.hour) * 60 + this.minute) * 60 + this.second) * 1000 + this.millisecond;
+        return (((this.day * 24 + this.hour) * 60 + this.minute) * 60 + this.second) * 1000 + this.millisecond;
     }
 };
 
@@ -262,22 +256,46 @@ Datetime = Object.assign(Datetime, {
         return new Datetime(new Date());
     },
 
-    leapYears(year1, year2) {
-        let count = 0;
-        for (let y = year1; y <= year2; y++) {
-            if (information.isLeapYear(y)) count++;
+    today() {
+        const date = new Date();
+        return new Datetime(date.getFullYear(), date.getMonth() + 1, date.getDate());
+    },
+
+    /**
+     * [0, year) 범위의 윤년 개수 반환
+     * todo: 구현이 확실하지 않음.
+     * @param year
+     * @return {number}
+     */
+    leapYears(year) {
+        if (year <= 0) {
+            throw new RangeError('year must be positive');
         }
 
-        return count;
+        year--;
+        return Math.floor(year / 4) - Math.floor(year / 100) + Math.floor(year / 400);
+    },
+
+    /**
+     * [year1, year2) 범위의 윤년 개수 반환
+     * todo: 구현이 확실하지 않음.
+     * @param year1
+     * @param year2
+     * @return {number}
+     */
+    leapBetweenYears(year1, year2) {
+        return Datetime.leapYears(year2) - Datetime.leapYears(year1);
     }
 });
 
 Datetime.prototype = {
-    toString(globalCode) {
-        globalCode ||= "en-US";
+    toString(format) {
+        format ||= 'ko-KR';
 
+        let isFormatCode = /[a-z]{2}-[A-Z]{2}/.test(format);
+        let globalCode = isFormatCode ? format : 'ko-KR'
         const cultureInfo = require(`./globalization/${globalCode}.json`);
-        let format = cultureInfo['formats']['full'];
+        format = isFormatCode ? cultureInfo['formats']['full'] : format;
 
         return format.replace(/ss?s?|mm?|hh?|ii?|t|DD?|WW?|MM?M?M?|YY?/g, (match) => {
             switch (match) {
@@ -292,9 +310,9 @@ Datetime.prototype = {
                 case 'mm':
                     return this.minute.toString().padStart(2, '0');
                 case 'h':
-                    return this.hour % 12 || 12;
+                    return this.hour === 12 ? 12 : this.hour % 12;
                 case 'hh':
-                    return (this.hour % 12 || 12).toString().padStart(2, '0');
+                    return (this.hour === 12 ? 12 : this.hour % 12).toString().padStart(2, '0');
                 case 'i':
                     return this.hour;
                 case 'ii':
@@ -327,16 +345,16 @@ Datetime.prototype = {
         });
     },
 
+    toNumber() {
+        return ((((this.year * 365 + this.day + Datetime.leapYears(this.year)) * 24 + this.hour) * 60 + this.minute) * 60 + this.second) * 1000 + this.millisecond;
+    },
+
     isLeapYear() {
         return information.isLeapYear(this.year);
     },
 
     monthRange() {
         return information.isLeapYear(this.year) ? information.leapMonths[this.month] : information.months[this.month];
-    },
-
-    toNumber() {
-        return ((((this.year * 365 + this.day + Datetime.leapYears(0, this.year)) * 24 + this.hour) * 60 + this.minute) * 60 + this.second) * 1000 + this.millisecond;
     },
 
     set(object) {
