@@ -1,0 +1,23 @@
+{
+  "name": "template",
+  "version": "1.0.0",
+  "description": "template repository for convert to es5 (compatible with kakaotalk bot)",
+  "main": "index.js",
+  "scripts": {
+    "build": "babel src --out-dir dist --extensions \".ts,.js\" --copy-files --ignore \"*.json\"",
+    "build-js": "babel src --out-dir dist --extensions \".js\" --copy-files --ignore \"*.json,*.d.ts\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/plugin-transform-named-capturing-groups-regex": "^7.22.5",
+    "@babel/preset-env": "^7.23.9",
+    "@babel/preset-typescript": "^7.23.3",
+    "babel-plugin-object-values-to-object-keys": "^1.0.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.23.9",
+    "@babel/core": "^7.23.9"
+  }
+}
