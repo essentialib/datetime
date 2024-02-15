@@ -1,4 +1,4 @@
-const { DateTime, Date, Time, Parser } = require('../index');
+const { DateTime, Date, Time, Parser } = require('../src');
 
 console.log(new Parser().parse('  저저저번 해의 그그그그그그그글피는 다다다다음해 '));
 

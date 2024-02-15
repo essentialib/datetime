@@ -1,15 +1,23 @@
 {
-  "name": "template",
+  "name": "@essentialib/datetime",
   "version": "1.0.0",
   "description": "template repository for convert to es5 (compatible with kakaotalk bot)",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "babel src --out-dir dist --extensions \".ts,.js\" --copy-files --ignore \"*.json\"",
     "build-js": "babel src --out-dir dist --extensions \".js\" --copy-files --ignore \"*.json,*.d.ts\""
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/essentialib/datetime.git"
+  },
+  "files": [
+    "dist",
+    "api"
+  ],
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "rhseung",
+  "license": "MIT",
   "dependencies": {
     "@babel/plugin-transform-named-capturing-groups-regex": "^7.22.5",
     "@babel/preset-env": "^7.23.9",
