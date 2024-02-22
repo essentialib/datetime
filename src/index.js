@@ -343,7 +343,7 @@ class DateTime {
 		return dt;
 	}
 	
-	static fromObject(datetimeObject, standard=undefined) {
+	static fromObject(datetimeObject, standard = undefined) {
 		const now = new DateTime();
 		
 		const ret = {};
@@ -365,7 +365,7 @@ class DateTime {
 			millisecond: (standard ? (standard.millisecond ?? now.millisecond) : 0)
 		}
 		
-		const units = ['year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond'];
+		const units = [ 'year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond' ];
 		
 		/**
 		 * "오전 6시" 는 year, month, day는 현재 or 기준(standard)으로, hour는 6, minute, second, millisecond는 0으로 정해지는 것이 합당하다.
@@ -383,8 +383,6 @@ class DateTime {
 				break;
 			}
 		}
-		
-		console.log(ret);    // FIXME: debug
 		
 		if (ret.year % 1 !== 0) {
 			ret.month += ret.year % 1 * 12;
@@ -552,39 +550,31 @@ class DateTime {
 	}
 	
 	static parse(dateString, locale = 'ko-KR') {
-		return DateTime.fromObject(...DateTime._parse(dateString, locale));
-	}
-	
-	static _parse(dateString, locale = 'ko-KR') {
-		// sanitize dateString
-		// '  2020년  3월  2일  ' -> '2020년 3월 2일'
-		dateString = dateString.trim().replace(/\s+/g, ' ');
-		
 		const cultureInfo = IS_DIST
 			? JSON.parse(FileStream.read(`/sdcard/msgbot/global_modules/datetime/globalization/${locale}.json`))
 			: require(`./globalization/${locale}.json`);
-		
+	
 		if (!cultureInfo)
 			throw new Error('Invalid locale, not found ' + locale);
 		
-		const isNumberRegex = /^[+-]?\d+(?:\.\d*)?$/;
-		const isRelativeObject = obj => obj.constructor === Object && 'diff' in obj && typeof obj.diff === 'number' && Object.keys(obj).length === 1;
-		const isHomonymObject = obj => obj.constructor === Object && 'homonym' in obj && Array.isArray(obj.homonym) && Object.keys(obj).length === 1;
+		const replaces = Object.entries(cultureInfo.replaces);
+		replaces.sort((a, b) => b[0].length - a[0].length); // '내일모레'와 '모레'가 모두 매칭되는 경우, '내일모레'가 먼저 매칭되도록 함.
 		
-		const keywords = {
-			units: new Set([ 'year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond' ]),
-			meridiems: new Set([ 'am', 'pm' ]),
-			weekdays: new Set([ 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday' ]),
-			times: new Set([ 'morning', 'noon', 'afternoon', 'evening', 'night', 'midnight' ]),
-			counts: new Set([ 'th', 'half', 'end' ]),
-			relative: new Set([ 'ago', 'after' ]),
-			standard: new Set(['from', 'of']),
-		};
+		dateString = dateString.trim().replace(/\s+/g, ' ');
+		dateString = dateString.replace(/(그+)(글피|끄저께)/g, (_, countStr, directionStr) => {
+			const offset = directionStr === '글피' ? 3 : 2;
+			const direction = directionStr === '글피' ? '다음' : '저번';
+			const count = countStr.length;
+			
+			return `${direction[0].repeat(count + offset)}${direction[1]} 날`;
+		});
+		replaces.forEach(([ key, value ]) => {
+			dateString = dateString.replace(new RegExp(key, 'g'), value);
+		});
 		
-		const homonyms = new Set(Object.keys(cultureInfo.translate).map(k => isHomonymObject(cultureInfo.translate[k]) ? k : null).filter(e => e !== null));
+		console.log(dateString);    // FIXME: debug
 		
-		// 1. parse ISO 8601 format
-		const parse1 = () => {
+		const iso_parse = () => {
 			const RE_ISO = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:\.(?<millisecond>\d{3}))?Z$/;
 			const isoMatch = dateString.match(RE_ISO);
 			
@@ -601,436 +591,646 @@ class DateTime {
 			}
 		};
 		
-		// 2. parse common date format
-		const parse2 = () => {
-			let meridiem = 'pm';
-			
-			for (let key in cultureInfo.translate) {
-				if (keywords.meridiems.has(cultureInfo.translate[key])) // am, pm이 value인 key들
-					meridiem = cultureInfo.translate[key];
-			}
-			
-			const RE_DATE = /(?:(?<year>\d{4})[-.\/])? *(?<month>\d{1,2})[-.\/] *(?<day>\d{1,2})\.?/;
-			const RE_TIME = /(?<hour>\d{1,2}):(?<minute>\d{1,2})(?::(?<second>\d{1,2})(?:\.(?<millisecond>\d{1,3}))?)?/;
-			
+		const common_parse = () => {
+			const RE_DATE = /(?:(?<year>\d{4})[-.\/년])? *(?<month>\d{1,2})[-.\/월] *(?<day>\d{1,2})[.일]?/;
+			const RE_TIME = /(?<hour>\d{1,2}) *[:시] *(?:(?<minute>\d{1,2}) *[:분]? *(?:(?<second>\d{1,2})초?)?)?/;
+
 			const dateMatch = dateString.match(RE_DATE);
 			const timeMatch = dateString.match(RE_TIME);
+
+			let year = dateMatch?.groups?.year;
+			let month = dateMatch?.groups?.month;
+			let day = dateMatch?.groups?.day;
+			let hour = timeMatch?.groups?.hour;
+			let minute = timeMatch?.groups?.minute;
+			let second = timeMatch?.groups?.second;
+			let millisecond = timeMatch?.groups?.millisecond;
 			
-			if (dateMatch || timeMatch) {
-				let year = dateMatch?.groups?.year;
-				let month = dateMatch?.groups?.month;
-				let day = dateMatch?.groups?.day;
-				let hour = timeMatch?.groups?.hour;
-				let minute = timeMatch?.groups?.minute;
-				let second = timeMatch?.groups?.second;
-				let millisecond = timeMatch?.groups?.millisecond;
-				
-				if (hour !== undefined && hour < 12 && meridiem === 'pm')
-					hour += 12;
-				
-				return { year, month, day, hour, minute, second, millisecond };
+			if (year)
+				year = parseInt(year);
+			if (month)
+				month = parseInt(month);
+			if (day)
+				day = parseInt(day);
+			if (hour)
+				hour = parseInt(hour);
+			if (minute)
+				minute = parseInt(minute);
+			if (second)
+				second = parseInt(second);
+			if (millisecond)
+				millisecond = parseInt(millisecond);
+
+			// 보통 '3시'는 '오후 3시'로 해석되어야 함.
+			// 자동으로 오후로 해석되는 시간의 범위: 1시 ~ 9시
+			let meridian = (1 <= hour && hour <= 9) ? 'pm' : 'am';
+			if (dateString.indexOf('오전') !== -1 || dateString.indexOf('am') !== -1)
+				meridian = 'am';
+			else if (dateString.indexOf('오후') !== -1 || dateString.indexOf('pm') !== -1)
+				meridian = 'pm';
+			
+			if (hour !== undefined && hour < 12 && meridian === 'pm')
+				hour += 12;
+			
+			const now = DateTime.now();
+			
+			if (dateString.indexOf('아침') !== -1) {
+				day = now.gt({ hour: 7, minute: 30 }) ? now.day + 1 : now.day;
+				hour = 7;
+				minute = 30;
 			}
+			else if (dateString.indexOf('정오') !== -1) {
+				day = now.gt({ hour: 12 }) ? now.day + 1 : now.day;
+				hour = 12;
+			}
+			else if (dateString.indexOf('점심') !== -1) {
+				day = now.gt({ hour: 12, minute: 30 }) ? now.day + 1 : now.day;
+				hour = 12;
+				minute = 30;
+			}
+			else if (dateString.indexOf('저녁') !== -1) {
+				day = now.gt({ hour: 18 }) ? now.day + 1 : now.day;
+				hour = 18;
+			}
+			else if (dateString.indexOf('자정') !== -1) {
+				day = now.day + 1;
+				hour = 0;
+			}
+
+			return { year, month, day, hour, minute, second, millisecond };
 		};
 		
-		// 3. analyze in tokens
-		const parse3 = () => {
-			let standard = {};
+		const relative_parse = () => {
+			const unitMap = { '년': 'year', '달': 'month', '일': 'day', '날': 'day', '시간': 'hour', '분': 'minute', '초': 'second' };
+			const units = [ 'year', 'month', 'day', 'hour', 'minute', 'second' ];
 			
-			// sort by length (desc), then by dictionary order (asc)
-			// desc로 정렬하기 때문에, '매주' 와 '주' 에서 '매주'에 먼저 매칭될 수 있게 함.
-			const keys = Object.keys(cultureInfo.translate);
-			keys.sort((a, b) => a.length !== b.length ? b.length - a.length : a.localeCompare(b));
+			const RE_RELATIVE = /(?<diff>[+-]?\d+(?:.\d*)?) *(?<unit>년|달|주|일|시간|분|초) *(?<direction>[전후])/g;
+			const RE_RELATIVE2 = /(?<diff>다+음|저+번|이번) *(?<unit>년|달|주|날|시간|분|초)/g;
+			const RE_WEEKDAY = /(?:\D+|^)(?<week>[일월화수목금토])(?:요일)?/;
 			
-			// tokenize dateString
-			// '2020년 3월 2일 12시 34분 56초' -> [2020, 'year', 3, 'month', 2, 'day', 12, 'hour', 34, 'minute', 56, 'second']
-			const getTokens = dstr => {
-				let startIdx = 0;
-				let chucks = [];
-				let found = false;
-				let foundBefore = false;
+			let ret = {};
+			
+			let arr;
+			const now = DateTime.now();
+			const set = (dir, diff, factor=1) => dir === '전' ? -parseInt(diff) * factor : parseInt(diff) * factor;
+			
+			// 'n<단위> 후'는 단위가 변경되고 나머지는 현재 시간을 따름. 3시간 후 -> 3시간 후 현재시간
+			while ((arr = RE_RELATIVE.exec(dateString)) !== null) {
+				let key = unitMap[arr.groups.unit];
 				
-				while (startIdx < dstr.length) {
-					foundBefore = found;
-					found = false;
-					
-					for (let key of keys) {
-						if (dstr.startsWith(key, startIdx)) {
-							let value = cultureInfo.translate[key];
-							
-							if (chucks.length >= 1 && typeof chucks[chucks.length - 1] === 'number' && typeof value === 'number') {
-								// 십이 -> [10, 2] -> 10+2
-								// 이십 -> [2, 10] -> 2*10
-								if (chucks[chucks.length - 1] > value)
-									chucks[chucks.length - 1] += value;
-								else
-									chucks[chucks.length - 1] *= value;
-							}
-							else if (chucks.length >= 1 && isRelativeObject(chucks[chucks.length - 1]) && isRelativeObject(value)) {
-								// 다음 내일 -> [{diff: 1}, {diff: 2}] -> {diff: 1+2}
-								// 내일 다음 -> [{diff: 2}, {diff: 1}] -> {diff: 2+1}
-								
-								chucks[chucks.length - 1].diff += value.diff;
-							}
-							else if (Array.isArray(value))
-								chucks.push(...value);
-							else
-								chucks.push(value);
-							
-							startIdx += key.length;
-							found = true;
-							
-							break;
-						}
-					}
-					
-					if (!found) {
-						if (chucks.length === 0)
-							chucks.push('');
-						
-						if (foundBefore)
-							chucks.push(dstr[startIdx++]);
-						else
-							chucks[chucks.length - 1] += dstr[startIdx++];
-					}
+				if (arr.groups.unit === '주') {
+					ret['day'] = (ret['day'] ?? 0) + set(arr.groups.direction, arr.groups.diff, 7);
+					// '다음 주' -> '다음 주 월요일'로 자동매칭은 부드러우나, '3주 후'는 '3주 후 현재시간'으로 자동매칭이 더 합당함.
 				}
-				
-				return chucks.map(e => isNumberRegex.test(e) ? parseFloat(e) : e);
-			};
-			
-			let splited = dateString.split(' ').map(getTokens).flat();
-			let tokens = [];
-			
-			/**
-			 * 공백이 없는 문자열에서의 토큰들끼리는 잘 merge 되었으나, 공백이 없는 문자열들끼리의 토큰들끼리의 merge를 처리해야함.
-			 * ex. 다음 다음다음 날 -> [다음, 다음다음, 날] -> [{diff: 1}, {diff: 2}, 'day'] -> [{diff: 1+2}, 'day']
-			 * 위의 예시에서 1+2를 하는 작업을 아래 코드에서 수행함.
-			 */
-			while (splited.length > 0) {
-				let value = splited.shift();
-				
-				if (tokens.length >= 1 && typeof tokens[tokens.length - 1] === 'number' && typeof value === 'number') {
-					if (tokens[tokens.length - 1] > value)
-						tokens[tokens.length - 1] += value;
-					else
-						tokens[tokens.length - 1] *= value;
-				}
-				else if (tokens.length >= 1 && isRelativeObject(tokens[tokens.length - 1]) && isRelativeObject(value)) {
-					tokens[tokens.length - 1].diff += value.diff;
-				}
-				else if (Array.isArray(value))
-					tokens.push(...value);
 				else
-					tokens.push(value);
+					ret[key] = (ret[key] ?? 0) + set(arr.groups.direction, arr.groups.diff);
+				
+				// '3시간 후' -> '3시간 후 현재시간'으로 자동매칭. '3일 후' -> '3일 후 현재시간' 으로 자동매칭...
+				ret.defaultToNow = true;
 			}
 			
-			console.log(tokens);    // FIXME: debug
-			
-			// 세 시간 반 -> 3.5시간
-			for (let i = 2; i < tokens.length; i++) {
-				if (keywords.units.has(tokens[i - 1]) &&
-					keywords.counts.has(tokens[i]) &&
-					tokens[i] === 'half' &&
-					typeof tokens[i - 2] === 'number'
-				) {
-					tokens[i - 2] += 0.5;
-					tokens.splice(i, 1);
-					i--;
+			// '다음 <단위>'는 단위만 변경되면 나머지는 초기화임. 다음 시간 -> 다음 시간 0분 0초
+			while ((arr = RE_RELATIVE2.exec(dateString)) !== null) {
+				// 다다다다음 -> 다음 * 4
+				const diff_num = (arr.groups.diff.length - 1) * (arr.groups.diff[0] === '다' ? 1 : (arr.groups.diff[0] === '저' ? -1 : 0));
+				
+				if (arr.groups.unit === '주') {
+					ret['day'] = (ret['day'] ?? 0) + diff_num * 7;
+					ret['day'] += 0 - (now.weekday - 1);    // '다음 주' -> '다음 주 월요일'로 자동매칭
 				}
+				else
+					ret[unitMap[arr.groups.unit]] = (ret[unitMap[arr.groups.unit]] ?? 0) + diff_num;
 			}
 			
-			// [3.5, '시간', '뒤'] -> [{ diff: 3.5 }, '시간']
-			let i = 0;
-			while (i < tokens.length) {
-				if (keywords.relative.has(tokens[i])) {
-					if (!standard)
-						standard = DateTime.now();
-					
-					const multiplier = tokens[i] === 'ago' ? -1 : 1;
-					
-					for (let j = i - 1; j >= 0; j--) {
-						if (keywords.standard.has(tokens[j]))
-							break;
-						
-						let diff;
-						
-						if (typeof tokens[j] === 'number')
-							diff = tokens[j] * multiplier;
-						else if (isRelativeObject(tokens[j]))
-							diff = tokens[j].diff * multiplier;
-						
-						if (diff !== undefined)
-							tokens[j] = { diff };
-					}
-					
-					tokens.splice(i, 1);
-					i = -1;
-				}
-				i++;
+			// 일월화수목금토가 일주일이라고 하면 현재가 수요일일 때, 다음주 일요일은 5일 후. 그러나 평상시는 이 날을 그냥 이번주 일요일이라고 함.
+			// 즉 현실에 맞게 일주일을 조금 다르게 대응시킴.
+			if ((arr = RE_WEEKDAY.exec(dateString)) !== null) {
+				const today = now.weekday - 1;   // 일월화수목금토가 아니고 월화수목금토일
+				const start = ((ret['day'] ?? 0) + today) % 7;
+				const dest = DateTime.getWeekDayFromName(arr.groups.week, true);
+				
+				ret['day'] = (ret['day'] ?? 0) + (dest - start);
 			}
 			
-			// [2022, 'year', 3, 'month', 2, 'day', 12, 'hour', 34, 'minute', 56, 'second']
-			const absoluteParse = () => {
-				const dateObject = {};
-				let meridiem = 'pm';
-				
-				for (let i = 0; i < tokens.length; i++) {
-					let token = tokens[i];
-					
-					if (keywords.units.has(token)) {    // year, month, week, day, hour, minute, second, millisecond 감지
-						if (cultureInfo['isTurnReversed'] === false) {   // 한국어처럼 '2022년' 과 같이 뒤에 단위가 붙는 경우
-							if (typeof tokens[i - 1] === 'number') {
-								dateObject[token] = tokens[i - 1];
-							}
-							// else
-							// 	throw new Error(`invalid format: { dateObject[${token}]: ${tokens[i - 1]} }`);
-						}
-						else {    // 영어처럼 'year 2022' 와 같이 앞에 단위가 붙는 경우
-							if (typeof tokens[i + 1] === 'number')
-								dateObject[token] = tokens[i + 1];
-							// else
-							// 	throw new Error(`invalid format: { dateObject[${token}]: ${tokens[i + 1]} }`);
-						}
-					}
-					else if (keywords.meridiems.has(token)) {
-						meridiem = token;
-					}
-					else if ('hour' in dateObject) {
-						if (keywords.meridiems.has(token))    // am, pm
-							meridiem = token;
-						
-						if (dateObject['hour'] < 12 && meridiem === 'pm')
-							dateObject['hour'] += 12;
-					}
-				}
-				
-				return dateObject;
-			};
-			
-			// [3, 'year', 'ago']
-			const relativeParse = () => {
-				const dateObject = {};
-				let standard_now = DateTime.now();
-				
-				for (let i = 0; i < tokens.length; i++) {
-					let token = tokens[i];
-					
-					if (keywords.standard.has(token)) {     // 3월 3일로부터
-						standard = DateTime._parse(tokens.slice(0, i).join(' '), locale)[0];
-						standard_now = DateTime.fromObject(standard);
-					}
-					else if (keywords.counts.has(token)) {    // [half] week, [end] month, 11 [th] month, 11 [th] sunday, ...
-						tokens[i + 1] ??= 'millisecond';    // 2023년의 마지막 -> 2023년 12월 31일 23시 59분 59초 999밀리초
-						
-						if (keywords.units.has(tokens[i + 1]) || keywords.weekdays.has(tokens[i + 1])) {
-							let tokenFront = tokens[i - 1]; // 11, 3, 1, ...
-							// token;  // th, half, end
-							let tokenBack = tokens[i + 1];  // month, week, day, sunday, ...
-							
-							let amount;
-							if (token === 'half')
-								amount = length => Math.floor(length / 2);
-							else if (token === 'th') {
-								if (typeof tokenFront !== 'number')
-									throw new Error(`invalid format: "${tokenFront} th"`);
-								amount = length => Math.min(tokenFront, length);
-							}
-							else if (token === 'end')
-								amount = length => length;
-							
-							switch (tokenBack) {
-								case 'year': {
-									if (token === 'half')
-										dateObject['day'] = amount(DateTime.lengthOfYear(dateObject['year'] ?? standard_now.year));
-									else
-										throw new Error('invalid format: "th/end 해"');
-									
-									dateObject['hour'] = 0;
-									dateObject['minute'] = 0;
-									dateObject['second'] = 0;
-									dateObject['millisecond'] = 0;
-									break;
-								}
-								case 'month': {
-									if (token === 'half') {
-										dateObject['day'] = amount(DateTime.lengthOfMonth(dateObject['year'] ?? standard_now.year, dateObject['month'] ?? standard_now.month));
-										dateObject['hour'] = 0;
-										dateObject['minute'] = 0;
-										dateObject['second'] = 0;
-										dateObject['millisecond'] = 0;
-									}
-									else {
-										dateObject['month'] = amount(12);
-										dateObject['day'] = 1;
-										dateObject['hour'] = 0;
-										dateObject['minute'] = 0;
-										dateObject['second'] = 0;
-										dateObject['millisecond'] = 0;
-									}
-									break;
-								}
-								case 'week': {
-									if (token === 'half') {
-										dateObject['day'] = standard_now.day + (amount(7) - standard_now.weekday + 7) % 7;
-										dateObject['hour'] = 0;
-										dateObject['minute'] = 0;
-										dateObject['second'] = 0;
-										dateObject['millisecond'] = 0;
-									}
-									else {
-										dateObject['day'] = standard_now.day + (0 - dateObject['weekday'] + 7) % 7;
-										let lengthOfMonth = DateTime.lengthOfMonth(dateObject['year'] ?? standard_now.year, dateObject['month'] ?? standard_now.month);
-										
-										// 만약 23일이 일요일이라면 16, 9, 2일이 셋째주, 둘째주, 셋째주가 됨
-										// 23 % 7 == 2 이므로 2일이 첫주의 시작이 되어야 함
-										// 이 달의 길이가 31일이라면 (31 - 2) // 7 == 4 이므로 4주차가 됨 (2, 9, 16, 23, 30)
-										let first = dateObject['day'] % 7;
-										let weeks = [ first ];
-										for (let i = first + 7; i <= lengthOfMonth; i += 7)
-											weeks.push(i);
-										
-										dateObject['day'] = weeks[amount(weeks.length)];
-										dateObject['hour'] = 0;
-										dateObject['minute'] = 0;
-										dateObject['second'] = 0;
-										dateObject['millisecond'] = 0;
-									}
-									break;
-								}
-								case 'day': {
-									if (token === 'half') {
-										dateObject['hour'] = amount(24);
-										dateObject['minute'] = 0;
-										dateObject['second'] = 0;
-										dateObject['millisecond'] = 0;
-									}
-									// else if (token === 'end') {
-									//
-									// }
-									else {  // th
-										dateObject['day'] = amount(DateTime.lengthOfMonth(dateObject['year'] ?? standard_now.year, dateObject['month'] ?? standard_now.month));
-										dateObject['hour'] = 0;
-										dateObject['minute'] = 0;
-										dateObject['second'] = 0;
-										dateObject['millisecond'] = 0;
-									}
-									break;
-								}
-								case 'hour': {
-									if (token === 'half') {
-										dateObject['minute'] = amount(60);
-										dateObject['second'] = 0;
-										dateObject['millisecond'] = 0;
-									}
-									else {
-										dateObject['hour'] = amount(24);
-										dateObject['minute'] = 0;
-										dateObject['second'] = 0;
-										dateObject['millisecond'] = 0;
-									}
-									break;
-								}
-								case 'minute': {
-									if (token === 'half') {
-										dateObject['second'] = amount(60);
-										dateObject['millisecond'] = 0;
-									}
-									else {
-										dateObject['minute'] = amount(60);
-										dateObject['second'] = 0;
-										dateObject['millisecond'] = 0;
-									}
-									break;
-								}
-								case 'second': {
-									if (token === 'half') {
-										dateObject['millisecond'] = amount(1000);
-									}
-									else {
-										dateObject['second'] = amount(60);
-										dateObject['millisecond'] = 0;
-									}
-									break;
-								}
-								case 'millisecond': {
-									if (token === 'half')
-										throw new Error('invalid format: "half 밀리초"');
-									else
-										dateObject['millisecond'] = amount(1000);
-									break;
-								}
-								default: {  // weekday
-									if (token === 'half')
-										throw new Error('invalid format: "half 요일"');
-									else {
-										dateObject['day'] = standard_now.day + (DateTime.getWeekDayFromName(tokenBack, locale = 'en-US') - standard_now.weekday + 7) % 7;
-										let lengthOfMonth = DateTime.lengthOfMonth(dateObject['year'] ?? standard_now.year, dateObject['month'] ?? standard_now.month);
-										
-										let first = dateObject['day'] % 7;
-										let weeks = [ first ];
-										for (let i = first + 7; i <= lengthOfMonth; i += 7)
-											weeks.push(i);
-										
-										dateObject['day'] = weeks[amount(weeks.length)];
-										dateObject['hour'] = 0;
-										dateObject['minute'] = 0;
-										dateObject['second'] = 0;
-										dateObject['millisecond'] = 0;
-									}
-								}
-							}
-						}
-					}
-					else if (keywords.times.has(token)) {
-						dateObject['minute'] = 0;
-						dateObject['second'] = 0;
-						dateObject['millisecond'] = 0;
-						
-						if (token === 'morning')
-							dateObject['hour'] = 9;
-						else if (token === 'noon')
-							dateObject['hour'] = 12;
-						else if (token === 'afternoon')
-							dateObject['hour'] = 15;
-						else if (token === 'evening')
-							dateObject['hour'] = 18;
-						else if (token === 'night')
-							dateObject['hour'] = 21;
-						else if (token === 'midnight') {
-							dateObject['hour'] = 0;
-							dateObject['day'] = dateObject['day'] ?? standard_now.day + 1;
-						}
-					}
-					else if (isRelativeObject(token)) {
-						if (keywords.units.has(tokens[i + 1])) {
-							dateObject[tokens[i + 1]] = standard_now[tokens[i + 1]] + token.diff;
-						}
-					}
-				}
-				
-				return dateObject;
-			};
-			
-			const absolute = absoluteParse();
-			const relative = relativeParse();
-			const result = Object.assign(absolute, relative);
-			
-			if (Object.keys(result).length > 0)
-				return [result, standard];
+			return ret;
 		};
 		
-		let parsed = parse1() ?? parse2();
+		const iso_parsed = iso_parse();
+		if (iso_parsed !== undefined)
+			return DateTime.fromObject(iso_parsed);
 		
-		if (parsed !== undefined)
-			return [parsed, undefined];
-		else {
-			let parsed = parse3();
-			
-			if (parsed !== undefined)
-				return parsed;
-			else
-				throw new Error('Invalid date string: ' + dateString);
+		const common_parsed = common_parse();
+		const relative_parsed = relative_parse();
+		const units = [ 'year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond' ];
+		
+		// '3월 4일' 이라고 하면 '현재년도 3월 4일 0시 0분 0초'로 해석되어야 함. 즉, 마지막으로 데이터가 존재하는 unit 까지만 현재 날짜로 지정.
+		let lastIndex = -1;
+		for (let i = units.length - 1; i >= 0; i--) {
+			if (relative_parsed[units[i]] !== undefined) {
+				lastIndex = i;
+				break;
+			}
 		}
+		
+		// 상대 날짜는 현재 날짜와 더해줌
+		const now = DateTime.now();
+		for (let i = 0; i < units.length; i++) {
+			if (!relative_parsed.defaultToNow && i > lastIndex)
+				break;
+			
+			relative_parsed[units[i]] = (relative_parsed[units[i]] ?? 0) + now[units[i]];
+		}
+		
+		// 상대 날짜와 일반 날짜를 합쳐서 전체 parse 결과를 도출
+		let parsed = {};
+		for (let unit of units) {
+			if (common_parsed[unit] && relative_parsed[unit])
+				parsed[unit] = relative_parsed[unit];   // 둘 다 있으면 relative_parsed 를 우선시
+			else if (common_parsed[unit] || relative_parsed[unit])
+				parsed[unit] = common_parsed[unit] ?? relative_parsed[unit];
+		}
+		
+		return DateTime.fromObject(parsed);
 	}
+	
+	// static parse(dateString, locale = 'ko-KR') {
+	// 	return DateTime.fromObject(...DateTime._parse(dateString, locale));
+	// }
+	//
+	// static _parse(dateString, locale = 'ko-KR') {
+	// 	// sanitize dateString
+	// 	// '  2020년  3월  2일  ' -> '2020년 3월 2일'
+	// 	dateString = dateString.trim().replace(/\s+/g, ' ');
+	//
+	// 	const cultureInfo = IS_DIST
+	// 		? JSON.parse(FileStream.read(`/sdcard/msgbot/global_modules/datetime/globalization/${locale}.json`))
+	// 		: require(`./globalization/${locale}.json`);
+	//
+	// 	if (!cultureInfo)
+	// 		throw new Error('Invalid locale, not found ' + locale);
+	//
+	// 	const isNumberRegex = /^[+-]?\d+(?:\.\d*)?$/;
+	// 	const isRelativeObject = obj => obj.constructor === Object && 'diff' in obj && typeof obj.diff === 'number' && Object.keys(obj).length === 1;
+	// 	const isHomonymObject = obj => obj.constructor === Object && 'homonym' in obj && Array.isArray(obj.homonym) && Object.keys(obj).length === 1;
+	//
+	// 	const keywords = {
+	// 		units: new Set([ 'year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond' ]),
+	// 		meridian: new Set([ 'am', 'pm' ]),
+	// 		weekdays: new Set([ 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday' ]),
+	// 		times: new Set([ 'morning', 'noon', 'afternoon', 'evening', 'night', 'midnight' ]),
+	// 		counts: new Set([ 'th', 'half', 'end' ]),
+	// 		relative: new Set([ 'ago', 'after' ]),
+	// 		standard: new Set([ 'from', 'of' ]),
+	// 	};
+	//
+	// 	const homonyms = new Set(Object.keys(cultureInfo.translate).map(k => isHomonymObject(cultureInfo.translate[k]) ? k : null).filter(e => e !== null));
+	//
+	// 	// 1. parse ISO 8601 format
+	// 	const parse1 = () => {
+	// 		const RE_ISO = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:\.(?<millisecond>\d{3}))?Z$/;
+	// 		const isoMatch = dateString.match(RE_ISO);
+	//
+	// 		if (isoMatch) {
+	// 			return {
+	// 				year: isoMatch.groups.year,
+	// 				month: isoMatch.groups.month,
+	// 				day: isoMatch.groups.day,
+	// 				hour: isoMatch.groups.hour,
+	// 				minute: isoMatch.groups.minute,
+	// 				second: isoMatch.groups.second,
+	// 				millisecond: isoMatch.groups.millisecond
+	// 			};
+	// 		}
+	// 	};
+	//
+	// 	// 2. parse common date format
+	// 	const parse2 = () => {
+	// 		let meridiem = 'pm';
+	//
+	// 		for (let key in cultureInfo.translate) {
+	// 			if (keywords.meridiems.has(cultureInfo.translate[key])) // am, pm이 value인 key들
+	// 				meridiem = cultureInfo.translate[key];
+	// 		}
+	//
+	// 		const RE_DATE = /(?:(?<year>\d{4})[-.\/])? *(?<month>\d{1,2})[-.\/] *(?<day>\d{1,2})\.?/;
+	// 		const RE_TIME = /(?<hour>\d{1,2}):(?<minute>\d{1,2})(?::(?<second>\d{1,2})(?:\.(?<millisecond>\d{1,3}))?)?/;
+	//
+	// 		const dateMatch = dateString.match(RE_DATE);
+	// 		const timeMatch = dateString.match(RE_TIME);
+	//
+	// 		if (dateMatch || timeMatch) {
+	// 			let year = dateMatch?.groups?.year;
+	// 			let month = dateMatch?.groups?.month;
+	// 			let day = dateMatch?.groups?.day;
+	// 			let hour = timeMatch?.groups?.hour;
+	// 			let minute = timeMatch?.groups?.minute;
+	// 			let second = timeMatch?.groups?.second;
+	// 			let millisecond = timeMatch?.groups?.millisecond;
+	//
+	// 			if (hour !== undefined && hour < 12 && meridiem === 'pm')
+	// 				hour += 12;
+	//
+	// 			return { year, month, day, hour, minute, second, millisecond };
+	// 		}
+	// 	};
+	//
+	// 	// 3. analyze in tokens
+	// 	const parse3 = () => {
+	// 		let standard = {};
+	//
+	// 		// sort by length (desc), then by dictionary order (asc)
+	// 		// desc로 정렬하기 때문에, '매주' 와 '주' 에서 '매주'에 먼저 매칭될 수 있게 함.
+	// 		const keys = Object.keys(cultureInfo.translate);
+	// 		keys.sort((a, b) => a.length !== b.length ? b.length - a.length : a.localeCompare(b));
+	//
+	// 		// tokenize dateString
+	// 		// '2020년 3월 2일 12시 34분 56초' -> [2020, 'year', 3, 'month', 2, 'day', 12, 'hour', 34, 'minute', 56, 'second']
+	// 		const getTokens = dstr => {
+	// 			let startIdx = 0;
+	// 			let chucks = [];
+	// 			let found = false;
+	// 			let foundBefore = false;
+	//
+	// 			while (startIdx < dstr.length) {
+	// 				foundBefore = found;
+	// 				found = false;
+	//
+	// 				for (let key of keys) {
+	// 					if (dstr.startsWith(key, startIdx)) {
+	// 						let value = cultureInfo.translate[key];
+	//
+	// 						if (chucks.length >= 1 && typeof chucks[chucks.length - 1] === 'number' && typeof value === 'number') {
+	// 							// 십이 -> [10, 2] -> 10+2
+	// 							// 이십 -> [2, 10] -> 2*10
+	// 							if (chucks[chucks.length - 1] > value)
+	// 								chucks[chucks.length - 1] += value;
+	// 							else
+	// 								chucks[chucks.length - 1] *= value;
+	// 						}
+	// 						else if (chucks.length >= 1 && isRelativeObject(chucks[chucks.length - 1]) && isRelativeObject(value)) {
+	// 							// 다음 내일 -> [{diff: 1}, {diff: 2}] -> {diff: 1+2}
+	// 							// 내일 다음 -> [{diff: 2}, {diff: 1}] -> {diff: 2+1}
+	//
+	// 							chucks[chucks.length - 1].diff += value.diff;
+	// 						}
+	// 						else if (Array.isArray(value))
+	// 							chucks.push(...value);
+	// 						else
+	// 							chucks.push(value);
+	//
+	// 						startIdx += key.length;
+	// 						found = true;
+	//
+	// 						break;
+	// 					}
+	// 				}
+	//
+	// 				if (!found) {
+	// 					if (chucks.length === 0)
+	// 						chucks.push('');
+	//
+	// 					if (foundBefore)
+	// 						chucks.push(dstr[startIdx++]);
+	// 					else
+	// 						chucks[chucks.length - 1] += dstr[startIdx++];
+	// 				}
+	// 			}
+	//
+	// 			return chucks.map(e => isNumberRegex.test(e) ? parseFloat(e) : e);
+	// 		};
+	//
+	// 		let splited = dateString.split(' ').map(getTokens).flat();
+	// 		let tokens = [];
+	//
+	// 		/**
+	// 		 * 공백이 없는 문자열에서의 토큰들끼리는 잘 merge 되었으나, 공백이 없는 문자열들끼리의 토큰들끼리의 merge를 처리해야함.
+	// 		 * ex. 다음 다음다음 날 -> [다음, 다음다음, 날] -> [{diff: 1}, {diff: 2}, 'day'] -> [{diff: 1+2}, 'day']
+	// 		 * 위의 예시에서 1+2를 하는 작업을 아래 코드에서 수행함.
+	// 		 */
+	// 		while (splited.length > 0) {
+	// 			let value = splited.shift();
+	//
+	// 			if (tokens.length >= 1 && typeof tokens[tokens.length - 1] === 'number' && typeof value === 'number') {
+	// 				if (tokens[tokens.length - 1] > value)
+	// 					tokens[tokens.length - 1] += value;
+	// 				else
+	// 					tokens[tokens.length - 1] *= value;
+	// 			}
+	// 			else if (tokens.length >= 1 && isRelativeObject(tokens[tokens.length - 1]) && isRelativeObject(value)) {
+	// 				tokens[tokens.length - 1].diff += value.diff;
+	// 			}
+	// 			else if (Array.isArray(value))
+	// 				tokens.push(...value);
+	// 			else
+	// 				tokens.push(value);
+	// 		}
+	//
+	// 		// 세 시간 반 -> 3.5시간
+	// 		for (let i = 2; i < tokens.length; i++) {
+	// 			if (keywords.units.has(tokens[i - 1]) &&
+	// 				keywords.counts.has(tokens[i]) &&
+	// 				tokens[i] === 'half' &&
+	// 				typeof tokens[i - 2] === 'number'
+	// 			) {
+	// 				tokens[i - 2] += 0.5;
+	// 				tokens.splice(i, 1);
+	// 				i--;
+	// 			}
+	// 		}
+	//
+	// 		// [3.5, '시간', '뒤'] -> [{ diff: 3.5 }, '시간']
+	// 		let i = 0;
+	// 		while (i < tokens.length) {
+	// 			if (keywords.relative.has(tokens[i])) {
+	// 				if (!standard)
+	// 					standard = DateTime.now();
+	//
+	// 				const multiplier = tokens[i] === 'ago' ? -1 : 1;
+	//
+	// 				for (let j = i - 1; j >= 0; j--) {
+	// 					if (keywords.standard.has(tokens[j]))
+	// 						break;
+	//
+	// 					let diff;
+	//
+	// 					if (typeof tokens[j] === 'number')
+	// 						diff = tokens[j] * multiplier;
+	// 					else if (isRelativeObject(tokens[j]))
+	// 						diff = tokens[j].diff * multiplier;
+	//
+	// 					if (diff !== undefined)
+	// 						tokens[j] = { diff };
+	// 				}
+	//
+	// 				tokens.splice(i, 1);
+	// 				i = -1;
+	// 			}
+	// 			i++;
+	// 		}
+	//
+	// 		// [2022, 'year', 3, 'month', 2, 'day', 12, 'hour', 34, 'minute', 56, 'second']
+	// 		const absoluteParse = () => {
+	// 			const dateObject = {};
+	// 			let meridiem = 'pm';
+	//
+	// 			for (let i = 0; i < tokens.length; i++) {
+	// 				let token = tokens[i];
+	//
+	// 				if (keywords.units.has(token)) {    // year, month, week, day, hour, minute, second, millisecond 감지
+	// 					if (cultureInfo['isTurnReversed'] === false) {   // 한국어처럼 '2022년' 과 같이 뒤에 단위가 붙는 경우
+	// 						if (typeof tokens[i - 1] === 'number') {
+	// 							dateObject[token] = tokens[i - 1];
+	// 						}
+	// 						// else
+	// 						// 	throw new Error(`invalid format: { dateObject[${token}]: ${tokens[i - 1]} }`);
+	// 					}
+	// 					else {    // 영어처럼 'year 2022' 와 같이 앞에 단위가 붙는 경우
+	// 						if (typeof tokens[i + 1] === 'number')
+	// 							dateObject[token] = tokens[i + 1];
+	// 						// else
+	// 						// 	throw new Error(`invalid format: { dateObject[${token}]: ${tokens[i + 1]} }`);
+	// 					}
+	// 				}
+	// 				else if (keywords.meridiems.has(token)) {
+	// 					meridiem = token;
+	// 				}
+	// 				else if ('hour' in dateObject) {
+	// 					if (keywords.meridiems.has(token))    // am, pm
+	// 						meridiem = token;
+	//
+	// 					if (dateObject['hour'] < 12 && meridiem === 'pm')
+	// 						dateObject['hour'] += 12;
+	// 				}
+	// 			}
+	//
+	// 			return dateObject;
+	// 		};
+	//
+	// 		// [3, 'year', 'ago']
+	// 		const relativeParse = () => {
+	// 			const dateObject = {};
+	// 			let standard_now = DateTime.now();
+	//
+	// 			for (let i = 0; i < tokens.length; i++) {
+	// 				let token = tokens[i];
+	//
+	// 				if (keywords.standard.has(token)) {     // 3월 3일로부터
+	// 					standard = DateTime._parse(tokens.slice(0, i).join(' '), locale)[0];
+	// 					standard_now = DateTime.fromObject(standard);
+	// 				}
+	// 				else if (keywords.counts.has(token)) {    // [half] week, [end] month, 11 [th] month, 11 [th] sunday, ...
+	// 					tokens[i + 1] ??= 'millisecond';    // 2023년의 마지막 -> 2023년 12월 31일 23시 59분 59초 999밀리초
+	//
+	// 					if (keywords.units.has(tokens[i + 1]) || keywords.weekdays.has(tokens[i + 1])) {
+	// 						let tokenFront = tokens[i - 1]; // 11, 3, 1, ...
+	// 						// token;  // th, half, end
+	// 						let tokenBack = tokens[i + 1];  // month, week, day, sunday, ...
+	//
+	// 						let amount;
+	// 						if (token === 'half')
+	// 							amount = length => Math.floor(length / 2);
+	// 						else if (token === 'th') {
+	// 							if (typeof tokenFront !== 'number')
+	// 								throw new Error(`invalid format: "${tokenFront} th"`);
+	// 							amount = length => Math.min(tokenFront, length);
+	// 						}
+	// 						else if (token === 'end')
+	// 							amount = length => length;
+	//
+	// 						switch (tokenBack) {
+	// 							case 'year': {
+	// 								if (token === 'half')
+	// 									dateObject['day'] = amount(DateTime.lengthOfYear(dateObject['year'] ?? standard_now.year));
+	// 								else
+	// 									throw new Error('invalid format: "th/end 해"');
+	//
+	// 								dateObject['hour'] = 0;
+	// 								dateObject['minute'] = 0;
+	// 								dateObject['second'] = 0;
+	// 								dateObject['millisecond'] = 0;
+	// 								break;
+	// 							}
+	// 							case 'month': {
+	// 								if (token === 'half') {
+	// 									dateObject['day'] = amount(DateTime.lengthOfMonth(dateObject['year'] ?? standard_now.year, dateObject['month'] ?? standard_now.month));
+	// 									dateObject['hour'] = 0;
+	// 									dateObject['minute'] = 0;
+	// 									dateObject['second'] = 0;
+	// 									dateObject['millisecond'] = 0;
+	// 								}
+	// 								else {
+	// 									dateObject['month'] = amount(12);
+	// 									dateObject['day'] = 1;
+	// 									dateObject['hour'] = 0;
+	// 									dateObject['minute'] = 0;
+	// 									dateObject['second'] = 0;
+	// 									dateObject['millisecond'] = 0;
+	// 								}
+	// 								break;
+	// 							}
+	// 							case 'week': {
+	// 								if (token === 'half') {
+	// 									dateObject['day'] = standard_now.day + (amount(7) - standard_now.weekday + 7) % 7;
+	// 									dateObject['hour'] = 0;
+	// 									dateObject['minute'] = 0;
+	// 									dateObject['second'] = 0;
+	// 									dateObject['millisecond'] = 0;
+	// 								}
+	// 								else {
+	// 									dateObject['day'] = standard_now.day + (0 - dateObject['weekday'] + 7) % 7;
+	// 									let lengthOfMonth = DateTime.lengthOfMonth(dateObject['year'] ?? standard_now.year, dateObject['month'] ?? standard_now.month);
+	//
+	// 									// 만약 23일이 일요일이라면 16, 9, 2일이 셋째주, 둘째주, 셋째주가 됨
+	// 									// 23 % 7 == 2 이므로 2일이 첫주의 시작이 되어야 함
+	// 									// 이 달의 길이가 31일이라면 (31 - 2) // 7 == 4 이므로 4주차가 됨 (2, 9, 16, 23, 30)
+	// 									let first = dateObject['day'] % 7;
+	// 									let weeks = [ first ];
+	// 									for (let i = first + 7; i <= lengthOfMonth; i += 7)
+	// 										weeks.push(i);
+	//
+	// 									dateObject['day'] = weeks[amount(weeks.length)];
+	// 									dateObject['hour'] = 0;
+	// 									dateObject['minute'] = 0;
+	// 									dateObject['second'] = 0;
+	// 									dateObject['millisecond'] = 0;
+	// 								}
+	// 								break;
+	// 							}
+	// 							case 'day': {
+	// 								if (token === 'half') {
+	// 									dateObject['hour'] = amount(24);
+	// 									dateObject['minute'] = 0;
+	// 									dateObject['second'] = 0;
+	// 									dateObject['millisecond'] = 0;
+	// 								}
+	// 									// else if (token === 'end') {
+	// 									//
+	// 								// }
+	// 								else {  // th
+	// 									dateObject['day'] = amount(DateTime.lengthOfMonth(dateObject['year'] ?? standard_now.year, dateObject['month'] ?? standard_now.month));
+	// 									dateObject['hour'] = 0;
+	// 									dateObject['minute'] = 0;
+	// 									dateObject['second'] = 0;
+	// 									dateObject['millisecond'] = 0;
+	// 								}
+	// 								break;
+	// 							}
+	// 							case 'hour': {
+	// 								if (token === 'half') {
+	// 									dateObject['minute'] = amount(60);
+	// 									dateObject['second'] = 0;
+	// 									dateObject['millisecond'] = 0;
+	// 								}
+	// 								else {
+	// 									dateObject['hour'] = amount(24);
+	// 									dateObject['minute'] = 0;
+	// 									dateObject['second'] = 0;
+	// 									dateObject['millisecond'] = 0;
+	// 								}
+	// 								break;
+	// 							}
+	// 							case 'minute': {
+	// 								if (token === 'half') {
+	// 									dateObject['second'] = amount(60);
+	// 									dateObject['millisecond'] = 0;
+	// 								}
+	// 								else {
+	// 									dateObject['minute'] = amount(60);
+	// 									dateObject['second'] = 0;
+	// 									dateObject['millisecond'] = 0;
+	// 								}
+	// 								break;
+	// 							}
+	// 							case 'second': {
+	// 								if (token === 'half') {
+	// 									dateObject['millisecond'] = amount(1000);
+	// 								}
+	// 								else {
+	// 									dateObject['second'] = amount(60);
+	// 									dateObject['millisecond'] = 0;
+	// 								}
+	// 								break;
+	// 							}
+	// 							case 'millisecond': {
+	// 								if (token === 'half')
+	// 									throw new Error('invalid format: "half 밀리초"');
+	// 								else
+	// 									dateObject['millisecond'] = amount(1000);
+	// 								break;
+	// 							}
+	// 							default: {  // weekday
+	// 								if (token === 'half')
+	// 									throw new Error('invalid format: "half 요일"');
+	// 								else {
+	// 									dateObject['day'] = standard_now.day + (DateTime.getWeekDayFromName(tokenBack, locale = 'en-US') - standard_now.weekday + 7) % 7;
+	// 									let lengthOfMonth = DateTime.lengthOfMonth(dateObject['year'] ?? standard_now.year, dateObject['month'] ?? standard_now.month);
+	//
+	// 									let first = dateObject['day'] % 7;
+	// 									let weeks = [ first ];
+	// 									for (let i = first + 7; i <= lengthOfMonth; i += 7)
+	// 										weeks.push(i);
+	//
+	// 									dateObject['day'] = weeks[amount(weeks.length)];
+	// 									dateObject['hour'] = 0;
+	// 									dateObject['minute'] = 0;
+	// 									dateObject['second'] = 0;
+	// 									dateObject['millisecond'] = 0;
+	// 								}
+	// 							}
+	// 						}
+	// 					}
+	// 				}
+	// 				else if (keywords.times.has(token)) {
+	// 					dateObject['minute'] = 0;
+	// 					dateObject['second'] = 0;
+	// 					dateObject['millisecond'] = 0;
+	//
+	// 					if (token === 'morning')
+	// 						dateObject['hour'] = 9;
+	// 					else if (token === 'noon')
+	// 						dateObject['hour'] = 12;
+	// 					else if (token === 'afternoon')
+	// 						dateObject['hour'] = 15;
+	// 					else if (token === 'evening')
+	// 						dateObject['hour'] = 18;
+	// 					else if (token === 'night')
+	// 						dateObject['hour'] = 21;
+	// 					else if (token === 'midnight') {
+	// 						dateObject['hour'] = 0;
+	// 						dateObject['day'] = dateObject['day'] ?? standard_now.day + 1;
+	// 					}
+	// 				}
+	// 				else if (isRelativeObject(token)) {
+	// 					if (keywords.units.has(tokens[i + 1])) {
+	// 						dateObject[tokens[i + 1]] = standard_now[tokens[i + 1]] + token.diff;
+	// 					}
+	// 				}
+	// 			}
+	//
+	// 			return dateObject;
+	// 		};
+	//
+	// 		const absolute = absoluteParse();
+	// 		const relative = relativeParse();
+	// 		const result = Object.assign(absolute, relative);
+	//
+	// 		if (Object.keys(result).length > 0)
+	// 			return [ result, standard ];
+	// 	};
+	//
+	// 	let parsed = parse1() ?? parse2();
+	//
+	// 	if (parsed !== undefined)
+	// 		return [ parsed, undefined ];
+	// 	else {
+	// 		let parsed = parse3();
+	//
+	// 		if (parsed !== undefined)
+	// 			return parsed;
+	// 		else
+	// 			throw new Error('Invalid date string: ' + dateString);
+	// 	}
+	// }
 	
 	static now() {
 		return new DateTime(new $D());
@@ -1164,7 +1364,7 @@ class DateTime {
 		return DateTime.isLeapYear(year) ? 366 : 365;
 	}
 	
-	static getWeekDayFromName(weekDayName, locale = 'ko-KR') {
+	static getWeekDayFromName(weekDayName, startOnMon = false, locale = 'ko-KR') {
 		const cultureInfo = IS_DIST
 			? JSON.parse(FileStream.read(`/sdcard/msgbot/global_modules/datetime/globalization/${locale}.json`))
 			: require(`./globalization/${locale}.json`);
@@ -1172,9 +1372,17 @@ class DateTime {
 		if (!cultureInfo)
 			throw new Error('Invalid locale, not found ' + locale);
 		
-		let ret = cultureInfo['W'].map(e => e.toLowerCase()).indexOf(weekDayName.toLowerCase());
+		let W = cultureInfo['W'];
+		let WW = cultureInfo['WW'];
+		
+		if (startOnMon) {
+			W = W.slice(1).concat(W[0]);
+			WW = WW.slice(1).concat(WW[0]);
+		}
+		
+		let ret = W.map(e => e.toLowerCase()).indexOf(weekDayName.toLowerCase());
 		if (ret === -1)
-			ret = cultureInfo['WW'].map(e => e.toLowerCase()).indexOf(weekDayName.toLowerCase());
+			ret = WW.map(e => e.toLowerCase()).indexOf(weekDayName.toLowerCase());
 		if (ret === -1)
 			throw new Error('Invalid weekDayName, not found ' + weekDayName);
 		
@@ -1207,313 +1415,8 @@ class DateTime {
 	}
 }
 
-// TODO: implement
-
-class Parser {
-	constructor(locale='ko-KR') {
-		this.locale = locale;
-		this.cultureInfo = IS_DIST
-			? JSON.parse(FileStream.read(`/sdcard/msgbot/global_modules/datetime/globalization/${locale}.json`))
-			: require(`./globalization/${locale}.json`);
-		
-		if (!this.cultureInfo)
-			throw new Error('Invalid locale, not found ' + locale);
-		
-		this.replaces = this.cultureInfo.replaces;
-		this.keywords = this.cultureInfo.keywords;
-	}
-	
-	normalization(dateString) {
-		let ret = dateString.trim().replace(/\s+/g, ' ');
-		
-		for (let [ key, value ] of Parser.objectLoop(this.replaces)) {
-			if (Parser.isRepeatObject(value)) {
-				const i = new Parser.RepeatToken(key, value);
-				if (i.key.test(ret))
-					ret = i.replace(ret);
-			}
-			else if (Parser.isContinueObject(value)) {
-				const i = new Parser.ContinueToken(key, value);
-				if (i.key.test(ret))
-					ret = i.replace(ret);
-			}
-			else
-				ret = ret.replaceAll(key, value);
-		}
-		
-		return ret;
-	}
-	
-	getTokensInNonSpace(dateString) {
-		let startIdx = 0;
-		let chucks = [];
-		let found = false;
-		let foundBefore = false;
-		
-		let dict = {};
-		for (let keyword in this.keywords) {
-			for (let key in this.keywords[keyword]) {
-				if (key in dict)
-					dict[key] = { meanings: [ dict[key], this.keywords[keyword][key] ] };
-				else
-					dict[key] = this.keywords[keyword][key];
-			}
-		}
-		
-		while (startIdx < dateString.length) {
-			foundBefore = found;
-			found = false;
-			
-			for (let [ key, value ] of Parser.objectLoop(dict)) {
-				if (dateString.startsWith(key, startIdx)) {
-					
-					if (chucks.length >= 1 && typeof chucks[chucks.length - 1] === 'number' && typeof value === 'number') {
-						// 십이 -> [10, 2] -> 10+2
-						// 이십 -> [2, 10] -> 2*10
-						if (chucks[chucks.length - 1] > value)
-							chucks[chucks.length - 1] += value;
-						else
-							chucks[chucks.length - 1] *= value;
-					}
-					else if (chucks.length >= 1 && Parser.isDiffObject(chucks[chucks.length - 1]) && Parser.isDiffObject(value)) {
-						// 다음 내일 -> [{diff: 1}, {diff: 2}] -> {diff: 1+2}
-						// 내일 다음 -> [{diff: 2}, {diff: 1}] -> {diff: 2+1}
-						
-						chucks[chucks.length - 1].diff += value.diff;
-					}
-					else if (Array.isArray(value))
-						chucks.push(...value);
-					else
-						chucks.push(value);
-					
-					startIdx += key.length;
-					found = true;
-					
-					break;
-				}
-			}
-			
-			if (!found) {
-				if (chucks.length === 0)
-					chucks.push('');
-				
-				if (foundBefore)
-					chucks.push(dateString[startIdx++]);
-				else
-					chucks[chucks.length - 1] += dateString[startIdx++];
-			}
-		}
-		
-		return chucks.map(e => Parser.isNumberRegex.test(e) ? parseFloat(e) : e);
-	}
-	
-	getTokens(dateString) {
-		let notMerged = dateString.split(' ').map(this.getTokensInNonSpace);
-		
-		let tokens = [];
-		
-		/**
-		 * 공백이 없는 문자열에서의 토큰들끼리는 잘 merge 되었으나, 공백이 없는 문자열들끼리의 토큰들끼리의 merge를 처리해야함.
-		 * ex. 다음 다음다음 날 -> [다음, 다음다음, 날] -> [{diff: 1}, {diff: 2}, 'day'] -> [{diff: 1+2}, 'day']
-		 * 위의 예시에서 1+2를 하는 작업을 아래 코드에서 수행함.
-		 */
-		while (notMerged.length > 0) {
-			let value = notMerged.shift();
-			
-			if (tokens.length >= 1 && typeof tokens[tokens.length - 1] === 'number' && typeof value === 'number') {
-				if (tokens[tokens.length - 1] > value)
-					tokens[tokens.length - 1] += value;
-				else
-					tokens[tokens.length - 1] *= value;
-			}
-			else if (tokens.length >= 1 && Parser.isDiffObject(tokens[tokens.length - 1]) && Parser.isDiffObject(value)) {
-				tokens[tokens.length - 1].diff += value.diff;
-			}
-			else if (Array.isArray(value))
-				tokens.push(...value);
-			else
-				tokens.push(value);
-		}
-		
-		return tokens;
-	}
-	
-	parse_ISO(dateString) {
-		const m = dateString
-			.match(/^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:\.(?<millisecond>\d{3}))?Z$/);
-		
-		if (m) {
-			return {
-				year: m.groups.year,
-				month: m.groups.month,
-				day: m.groups.day,
-				hour: m.groups.hour,
-				minute: m.groups.minute,
-				second: m.groups.second,
-				millisecond: m.groups.millisecond
-			};
-		}
-	}
-	
-	parse_common(dateString) {
-		const date = dateString
-			.match(/(?:(?<year>\d{4})[-.\/])? *(?<month>\d{1,2})[-.\/] *(?<day>\d{1,2})\.?/);
-		const time = dateString
-			.match(/(?<hour>\d{1,2}) *: *(?<minute>\d{1,2})(?: *: *(?<second>\d{1,2})(?:\.(?<millisecond>\d{1,3}))?)?/);
-		
-		if (date || time) {
-			return {
-				year: date?.groups?.year,
-				month: date?.groups?.month,
-				day: date?.groups?.day,
-				hour: time?.groups?.hour,
-				minute: time?.groups?.minute,
-				second: time?.groups?.second,
-				millisecond: time?.groups?.millisecond
-			};
-		}
-	}
-	
-	parse_absolute(dateString) {
-	
-	}
-	
-	parse_relative(dateString) {
-	
-	}
-	
-	parse(dateString) {
-		dateString = this.normalization(dateString);
-		let tokens = this.getTokens(dateString);
-		
-		let parsed = this.parse_ISO(dateString) ?? this.parse_common(dateString);
-		parsed ??= Object.assign(this.parse_absolute(dateString), this.parse_relative(dateString));
-		
-		if (parsed !== undefined)
-			return parsed;
-		else
-			throw new Error('Invalid date string: ' + dateString);
-	}
-	
-	static isNumberRegex = /^[+-]?\d+(?:\.\d*)?$/;
-	
-	static Token = class {
-		constructor(key, obj) {
-			this.key = new RegExp(key, 'g');
-		}
-		
-		replace(str) {
-			return 'Not implemented';
-		}
-	};
-	
-	static isContinueObject(obj) {
-		return obj.constructor === Object
-			&& 'offset' in obj
-			&& typeof obj.offset === 'number'
-			&& 'tail' in obj
-			&& typeof obj.tail === 'string'
-			&& Object.keys(obj).length === 2;
-	}
-	
-	static ContinueToken = class extends Parser.Token {
-		constructor(key, obj) {
-			if (!Parser.isContinueObject(obj))
-				throw new Error();
-			
-			super(key, obj);
-			
-			this.offset = obj.offset;
-			this.tail = obj.tail;
-		}
-		
-		replace(str) {
-			return str.replace(this.key, (m, g) => {
-				return `${this.offset + g.length}${this.tail}`;
-			})
-		}
-	}
-	
-	static isRepeatObject(obj) {
-		return obj.constructor === Object
-			&& 'repeat' in obj
-			&& typeof obj.repeat === 'string'
-			&& Object.keys(obj).length === 1;
-	}
-	
-	static RepeatToken = class extends Parser.Token {
-		constructor(key, obj) {
-			if (!Parser.isRepeatObject(obj))
-				throw new Error();
-			
-			super(key, obj);
-			
-			this.repeat = obj.repeat;
-		}
-		
-		/**
-		 * @example (저+)번: 저저번 그래도 -> 저번 저번 그래도
-		 */
-		replace(str) {
-			return str.replace(this.key, (m, g) => {
-				return Array(g.length).fill(this.repeat).join(' ');
-			});
-		}
-	}
-	
-	static isDiffObject(obj) {
-		return obj.constructor === Object
-			&& 'diff' in obj
-			&& typeof obj.diff === 'number'
-			&& Object.keys(obj).length === 1;
-	}
-	
-	static isHomonymObject(obj) {
-		return obj.constructor === Object
-			&& 'meanings' in obj
-			&& Array.isArray(obj.meanings)
-			&& Object.keys(obj).length === 1;
-	}
-	
-	static objectLoop(obj) {
-		const keys = Object.keys(obj);
-		
-		// 키들의 길이로 정렬하기 때문에, '매주' 와 '주' 에서 '매주'에 먼저 매칭될 수 있게 함.
-		// continue, repeat token들은 길이가 훨씬 길어질 수 있으므로(ex. 저저저저저저번) 가장 우선순위를 높임.
-		keys.sort((a, b) => {
-			if (a.includes('+') && !b.includes('+'))
-				return -1;
-			if (!a.includes('+') && b.includes('+'))
-				return 1;
-			return a.length !== b.length ? b.length - a.length : a.localeCompare(b);
-		});
-		
-		return keys.map(k => [k, obj[k]]);
-	}
-}
-
-/**
- * @param {string} string
- *
- *
- */
-const _getToken = (string) => {
-
-};
-
-/**
- * @param {string} dateString
- * @param {string} [locale='ko-KR']
- *
- *
- */
-const _parse = (dateString, locale='ko-KR') => {
-
-};
-
 exports.DateTime = DateTime;
 exports.Date = Date;
 exports.Time = Time;
 exports.Duration = Duration;
-exports.Parser = Parser;
 exports.$D = $D;

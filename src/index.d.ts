@@ -199,7 +199,7 @@ export declare class DateTime {
 
     static lengthOfMonth(year: number, month: number): number;
     static lengthOfYear(year: number): number;
-    static getWeekDayFromName(weekDayName: string, locale?: string): number;
+    static getWeekDayFromName(weekDayName: string, startOnMon?: boolean, locale?: string): number;
 
     isLeapYear(): boolean;
     isWeekend(): boolean;

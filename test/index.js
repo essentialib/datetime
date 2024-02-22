@@ -1,38 +1,62 @@
-const { DateTime, Date, Time, Parser } = require('../src');
+const { DateTime, Date, Time } = require('../src');
 
-console.log(new Parser().parse('  저저저번 해의 그그그그그그그글피는 다다다다음해 '));
+parse = string => {
+	console.log(string[0]);
+	const parsed = DateTime.parse(string[0]);
+	console.log(parsed.toString('YYYY-MM-DD t hh:mm:ss.sss WW'));
+};
 
-// parse = string => {
-// 	console.log(string[0], '\n', DateTime.parse(string[0]).toString('YYYY-MM-DD t hh:mm:ss.sss WW'));
-// };
-//
-// parse`오후 7:15`
-// // parse`12월 12일의 다음날`  // ✅
-//
-// // parse`십이월 십이일`   // ✅
-// // parse`십이월 이십일`   // ✅
-//
-// // parse`다음 주 토요일`
-// // parse`1백만 일 1백만 시간 1백만 분 1백만 초 이후`
-//
-// // parse`오전 6시` // ✅
-// // parse`네시간 3분 이전`
-// // parse`오전 6시로부터 네시간 3분 이전`
-//
-// // parse`2023년의 마지막으로부터 5년 2개월 전`
-// // parse`2023년의 마지막` // --> 2023-12-31 23:59:59
-// // parse`2023년의 마지막 날`
-//
-// // parse`다음 날` // ✅
-// // parse`다음 다음 날`  // ✅
-// // parse`전전전날`
-//
-// // parse`오늘`
-// // parse`아침`
-// // parse`정오`
-// // parse`낮`
-// // parse`저녁`
-// // parse`밤`
-// // parse`자정`
-//
-// // parse`어제 아침`    // ✅
+// parse`새벽 3시`    // ✅
+// parse`오전 4시`    // ✅
+// parse`오후 7:15`  // ✅
+// parse`4시`   // ✅
+// parse`11시`  // ✅
+// parse`3월 4일`    // ✅
+// parse`3월 4일 7시`   // ✅
+// parse`3월 4일 7시 15분`   // ✅
+// parse`3월 4일 오전 7시 15분 30초`   // ✅
+
+// parse`다음 날` // ✅
+// parse`담날`   // ✅
+// parse`다음 주` // ✅
+// parse`담주` // ✅
+// parse`1주 후` // ✅
+// parse`다음 달` // ✅
+// parse`1달 후` // ✅
+// parse`다음 해` // ✅
+// parse`1년 후` // ✅
+// parse`다음 주 일요일` // ✅, 주일을 일월화수목금토 가 아니라 월화수목금토일 로 해서 '다음 주 일요일'을 보다 평상시 표현으로 사용할 수 있게 함.
+// parse`저번 주 일요일`  // ✅
+// parse`다다음 주`    // ✅
+// parse`다다음 주 일요일`    // ✅
+// parse`일요일`  // ✅
+// parse`일`    // ✅
+// parse`이번 주 일요일` // ✅
+// parse`저저저번주일요일` // ✅
+// parse`이번 해` // ✅
+// parse`이번 주` // ✅
+// parse`이번 달` // ✅
+// parse`이번 주 일요일` // ✅
+
+// parse`오늘`   // ✅
+// parse`어제`   // ✅
+// parse`내일`   // ✅
+// parse`낼`   // ✅
+// parse`모레`   // ✅
+// parse`글피`    // ✅
+// parse`그글피`   // ✅
+// parse`그그글피`  // ✅
+// parse`그제`   // ✅
+// parse`그저께`  // ✅
+// parse`그끄저께` // ✅
+// parse`그그끄저께`    // ✅
+
+// parse`3시간 후`    // ✅
+parse`5시간 5분 후`    // x
+// parse`4시간 3분 이전`    // x
+
+// parse`아침`    // ✅, TODO: 아침 지나고 테스트
+// parse`정오`    // ✅, TODO: 아침 지나고 테스트
+// parse`점심`    // ✅, TODO: 아침 지나고 테스트
+// parse`저녁`    // ✅, TODO: 아침 지나고 테스트
+// parse`자정`    // ✅, TODO: 아침 지나고 테스트
