@@ -372,6 +372,7 @@ class DateTime {
 		 * 아래의 코드는 if (year == null) else if (month == null) ... else if (millisecond == null) 에 대해 각각 for 문으로
 		 * 전의 unit을 기준(standard)의 값으로, 후의 unit을 시작으로 지정하는 코드다.
 		 */
+		let find = false;
 		for (let unit of units) {
 			if (ret[unit] != null) {
 				let x = units.indexOf(unit);
@@ -380,8 +381,13 @@ class DateTime {
 				for (let i = x; i < units.length; i++)
 					ret[units[i]] ??= defaults[units[i]];
 				
+				find = true;
 				break;
 			}
+		}
+		
+		if (!find) {
+			return DateTime.now();  // `now` 변수가 이미 있긴 하지만 위의 연산이 밀리초 단위의 값에 오차를 주기에 충분하므로 다시 호출
 		}
 		
 		if (ret.year % 1 !== 0) {
@@ -664,29 +670,33 @@ class DateTime {
 			const unitMap = { '년': 'year', '달': 'month', '일': 'day', '날': 'day', '시간': 'hour', '분': 'minute', '초': 'second' };
 			const units = [ 'year', 'month', 'day', 'hour', 'minute', 'second' ];
 			
-			const RE_RELATIVE = /(?<diff>[+-]?\d+(?:.\d*)?) *(?<unit>년|달|주|일|시간|분|초) *(?<direction>[전후])/g;
+			const RE_RELATIVE = /(?<diff>[+-]?\d+(?:.\d*)?) *(?<unit>년|달|주|일|시간|분|초)/g;
+			const RE_RELATIVE_END = / *(?<direction>[전후])$/;
 			const RE_RELATIVE2 = /(?<diff>다+음|저+번|이번) *(?<unit>년|달|주|날|시간|분|초)/g;
 			const RE_WEEKDAY = /(?:\D+|^)(?<week>[일월화수목금토])(?:요일)?/;
 			
 			let ret = {};
 			
-			let arr;
+			let arr, arr2;
 			const now = DateTime.now();
 			const set = (dir, diff, factor=1) => dir === '전' ? -parseInt(diff) * factor : parseInt(diff) * factor;
 			
 			// 'n<단위> 후'는 단위가 변경되고 나머지는 현재 시간을 따름. 3시간 후 -> 3시간 후 현재시간
-			while ((arr = RE_RELATIVE.exec(dateString)) !== null) {
-				let key = unitMap[arr.groups.unit];
-				
-				if (arr.groups.unit === '주') {
-					ret['day'] = (ret['day'] ?? 0) + set(arr.groups.direction, arr.groups.diff, 7);
-					// '다음 주' -> '다음 주 월요일'로 자동매칭은 부드러우나, '3주 후'는 '3주 후 현재시간'으로 자동매칭이 더 합당함.
+			arr2 = RE_RELATIVE_END.exec(dateString);
+			if (arr2 !== null) {
+				while ((arr = RE_RELATIVE.exec(dateString)) !== null) {
+					let key = unitMap[arr.groups.unit];
+					
+					if (arr.groups.unit === '주') {
+						ret['day'] = (ret['day'] ?? 0) + set(arr2.groups.direction, arr.groups.diff, 7);
+						// '다음 주' -> '다음 주 월요일'로 자동매칭은 부드러우나, '3주 후'는 '3주 후 현재시간'으로 자동매칭이 더 합당함.
+					}
+					else
+						ret[key] = (ret[key] ?? 0) + set(arr2.groups.direction, arr.groups.diff);
+					
+					// '3시간 후' -> '3시간 후 현재시간'으로 자동매칭. '3일 후' -> '3일 후 현재시간' 으로 자동매칭...
+					ret.defaultToNow = true;
 				}
-				else
-					ret[key] = (ret[key] ?? 0) + set(arr.groups.direction, arr.groups.diff);
-				
-				// '3시간 후' -> '3시간 후 현재시간'으로 자동매칭. '3일 후' -> '3일 후 현재시간' 으로 자동매칭...
-				ret.defaultToNow = true;
 			}
 			
 			// '다음 <단위>'는 단위만 변경되면 나머지는 초기화임. 다음 시간 -> 다음 시간 0분 0초
