@@ -20,6 +20,11 @@ parse = string => {
 // parse`담날`   // ✅
 // parse`다음 주` // ✅
 // parse`담주` // ✅
+parse`저번 주` // ✅
+parse`저번주`  // ✅
+parse`지난주`  // ✅
+parse`지난 주 금요일` // ✅
+parse`지난주 수요일`  // ✅
 // parse`1주 후` // ✅
 // parse`다음 달` // ✅
 // parse`1달 후` // ✅

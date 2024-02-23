@@ -36,6 +36,8 @@ export declare class Date {
     get day(): number;
     set day(value: number);
 
+    eq(dateObject: Date | DateTemplate): boolean;
+    sub(dateObject: Date | Duration | DateTemplate): Duration | Date;
     toString(): string;
     toObject(): DateTemplate;
 }
@@ -62,6 +64,8 @@ export declare class Time {
     get millisecond(): number;
     set millisecond(value: number);
 
+    eq(timeObject: Time | TimeTemplate): boolean;
+    sub(timeObject: Time | Duration | TimeTemplate): Duration | Time;
     toString(): string;
     toObject(): TimeTemplate;
 }
@@ -154,8 +158,8 @@ export declare class DateTime {
     add(datetimeObject: DateTime | Duration | DurationTemplate): DateTime;
     sub(datetimeObject: DateTime | Duration | DurationTemplate): DateTime | Duration;
     set(datetimeObject: DateTime | SetDateTimeTemplate | Date | Time): DateTime;
-    eq(datetimeObject: DateTime | number | $D | SetDateTimeTemplate): boolean;
-    neq(datetimeObject: DateTime | number | $D | SetDateTimeTemplate): boolean;
+    eq(datetimeObject: DateTime | number | $D | SetDateTimeTemplate, ignoreMillisecond?: boolean): boolean;
+    neq(datetimeObject: DateTime | number | $D | SetDateTimeTemplate, ignoreMillisecond?: boolean): boolean;
     ge(datetimeObject: DateTime | number | $D | SetDateTimeTemplate): boolean;
     gt(datetimeObject: DateTime | number | $D | SetDateTimeTemplate): boolean;
     le(datetimeObject: DateTime | number | $D | SetDateTimeTemplate): boolean;

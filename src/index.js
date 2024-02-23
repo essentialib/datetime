@@ -20,15 +20,15 @@ class Duration {
 	}
 	
 	get second() {
-		return Math.floor(this.amount / 1000) % 86400;
+		return (this.amount >= 0 ? Math.floor(this.amount / 1000) : Math.ceil(this.amount / 1000)) % 86400;
 	}
 	
 	get day() {
-		return Math.floor(this.amount / 86400000);
+		return (this.amount >= 0 ? Math.floor(this.amount / 86400000) : Math.ceil(this.amount / 86400000));
 	}
 	
 	toString() {
-		return `duration(day=${this.day}, second=${this.second}, millisecond=${this.millisecond})`;
+		return `Duration(day=${this.day}, second=${this.second}, millisecond=${this.millisecond})`;
 	}
 }
 
@@ -49,8 +49,29 @@ class Date {
 		return this._source.getDate();
 	}
 	
+	eq(dateObject) {
+		const { year, month, day } = dateObject;
+		return this.year === year && this.month === month && this.day === day;
+	}
+	
+	sub(dateObject) {
+		if (dateObject instanceof Date)
+			return new Duration(this._source.getTime() - dateObject._source.getTime());
+		else if (dateObject instanceof Duration) {
+			let dt = new $D(this._source);
+			dt.setMilliseconds(dt.getMilliseconds() - dateObject.amount);
+			return new Date(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
+		} else {
+			let dt = new $D(this._source);
+			dt.setFullYear(dt.getFullYear() - (dateObject.year ?? 0));
+			dt.setMonth(dt.getMonth() - (dateObject.month ?? 0));
+			dt.setDate(dt.getDate() - (dateObject.day ?? 0));
+			return new Date(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
+		}
+	}
+	
 	toString() {
-		return `date(year=${this.year}, month=${this.month}, day=${this.day})`;
+		return `Date(year=${this.year}, month=${this.month}, day=${this.day})`;
 	}
 	
 	toObject() {
@@ -87,8 +108,30 @@ class Time {
 		return this._source.getMilliseconds();
 	}
 	
+	eq(timeObject) {
+		const { hour, minute, second, millisecond } = timeObject;
+		return this.hour === hour && this.minute === minute && this.second === second && this.millisecond === millisecond;
+	}
+	
+	sub(timeObject) {
+		if (timeObject instanceof Time)
+			return new Duration(this._source.getTime() - timeObject._source.getTime());
+		else if (timeObject instanceof Duration) {
+			let dt = new $D(this._source);
+			dt.setMilliseconds(dt.getMilliseconds() - timeObject.amount);
+			return new Time(dt.getHours(), dt.getMinutes(), dt.getSeconds(), dt.getMilliseconds());
+		} else {
+			let dt = new $D(this._source);
+			dt.setHours(dt.getHours() - (timeObject.hour ?? 0));
+			dt.setMinutes(dt.getMinutes() - (timeObject.minute ?? 0));
+			dt.setSeconds(dt.getSeconds() - (timeObject.second ?? 0));
+			dt.setMilliseconds(dt.getMilliseconds() - (timeObject.millisecond ?? 0));
+			return new Time(dt.getHours(), dt.getMinutes(), dt.getSeconds(), dt.getMilliseconds());
+		}
+	}
+	
 	toString() {
-		return `time(hour=${this.hour}, minute=${this.minute}, second=${this.second}, millisecond=${this.millisecond})`;
+		return `Time(hour=${this.hour}, minute=${this.minute}, second=${this.second}, millisecond=${this.millisecond})`;
 	}
 	
 	toObject() {
@@ -296,7 +339,103 @@ class DateTime {
 	}
 
 	humanize() {
-		// TODO: implement
+		const now = DateTime.now();
+		const str = {
+			date: '',
+			time: ''
+		}
+		
+		let dayDiff = this.date.sub(now.date).day;
+		let secDiff = Math.ceil(this.sub(now).amount / 1000);
+		
+		let specials = {};
+		specials[-2] = '그제';
+		specials[-1] = '어제';
+		specials[0] = '오늘';
+		specials[1] = '내일';
+		specials[2] = '모레';
+		
+		let isSpecial = false;
+		for (let i = -2; i <= 2; i++) {
+			const dt = now.add({ day: i });
+			if (this.date.eq(dt.date)) {
+				str.date = specials[i];
+				isSpecial = true;
+				break;
+			}
+		}
+		if (!isSpecial) {
+			const nowWeekday = now.weekday - 1; // 월화수목금토일
+			const lastWeekMonDiff = -7 - nowWeekday;  // 저번 주 월요일까지의 날짜 차이
+			const nextWeekSunDiff = 13 - nowWeekday;  // 다음 주 일요일까지의 날짜 차이
+			
+			if (lastWeekMonDiff <= dayDiff && dayDiff <= nextWeekSunDiff) {   // 저번 주 ~ 다음 주
+				if (dayDiff - lastWeekMonDiff < 7)
+					str.date = `지난 주 ${this.weekdayName}`;
+				else if (nextWeekSunDiff - dayDiff < 7)
+					str.date = `다음 주 ${this.weekdayName}`;
+				else if (dayDiff < 0)
+					str.date = `이번 주 ${this.weekdayName}`;  // 이번 주의 지나간 요일은 '이번 주' 포함
+				else
+					str.date = this.weekdayName;    // 이번 주의 아직 지나지 않은 요일은 '이번 주' 생략
+			}
+			else if (this.year === now.year && this.month === now.month) {    // 저번 주 ~ 다음 주의 범위를 벗어나면서 달은 같은 경우
+				const week = dayDiff < 0 ? Math.ceil(dayDiff / 7) : Math.floor(dayDiff / 7);
+				const day = dayDiff - week * 7;
+				
+				const ret = [];
+				
+				if (week !== 0)
+					ret.push(`${Math.abs(week)}주`);
+				if (day !== 0)
+					ret.push(`${Math.abs(day)}일`);
+				
+				str.date = ret.join(' ') + (dayDiff < 0 ? ' 전' : ' 후');
+			}
+			else if (this.year === now.year)
+				str.date = `${this.month}월 ${this.day}일`;
+			else
+				str.date = `${this.year}년 ${this.month}월 ${this.day}일`;
+		}
+		
+		let isRelative = false;
+		if (this.hour === 0 && this.minute === 0 && this.second === 0)
+			str.time = "";  // '오늘 자정'은 마치 내일 0시를 말하는 것 같아서 그냥 '오늘'로 표시
+		else if (this.hour === 12 && this.minute === 0 && this.second === 0)
+			str.time = "정오";
+		else {
+			const sign = secDiff < 0 ? '전' : '후';
+			const amountSec = Math.abs(secDiff);
+			const hour = Math.floor(amountSec / 3600);
+			const minute = Math.floor((amountSec % 3600) / 60);
+			const second = amountSec % 60;
+			
+			if (hour < 6) {
+				isRelative = true;
+				
+				if (hour !== 0)
+					str.time += `${hour}시간 `;
+				if (minute !== 0)
+					str.time += `${minute}분 `;
+				// if (second !== 0)
+				// 	str.time += `${second}초 `;
+				// 초와 밀리초는 수행 시간에도 영향을 받고, 너무 세부적이므로 무시. 나중에 config 로 설정할 수 있게?
+				
+				if (str.time !== '')
+					str.time = str.time.trim() + ` ${sign}`;
+			}
+			else
+				str.time = this.toString("t h시 mm분");
+		}
+		
+		if (this.eq(now, true))
+			return '지금';
+		else if (isRelative)    // 상대적인 시간이면 최대 6시간 차이니까 날짜를 생략
+			return str.time;
+		else if (str.date === '오늘' && str.time !== '')  // 오늘인데 시간이 있으면 날짜를 생략
+			return str.time;
+		else
+			return `${str.date} ${str.time}`.trim();
 	}
 	
 	toNumber() {
@@ -304,7 +443,7 @@ class DateTime {
 	}
 	
 	toDate() {
-		return this._source;
+		return new $D(this._source);    // Date 객체의 깊은 복사
 	}
 	
 	toObject() {
@@ -494,13 +633,17 @@ class DateTime {
 		}
 	}
 	
-	eq(datetimeObject) {
+	eq(datetimeObject, ignoreMillisecond = false) {
 		const other = new DateTime(datetimeObject, this.locale);
-		return this.timestamp() === other.timestamp();
+		
+		if (!ignoreMillisecond)
+			return this.timestamp() === other.timestamp();
+		else
+			return this.year === other.year && this.month === other.month && this.day === other.day && this.hour === other.hour && this.minute === other.minute && this.second === other.second;
 	}
 	
-	neq(datetimeObject) {
-		return !this.eq(datetimeObject);
+	neq(datetimeObject, ignoreMillisecond = false) {
+		return !this.eq(datetimeObject, ignoreMillisecond);
 	}
 	
 	ge(datetimeObject) {
@@ -574,11 +717,10 @@ class DateTime {
 			
 			return `${direction[0].repeat(count + offset)}${direction[1]} 날`;
 		});
+		dateString = dateString.replace(/(저+)번/g, (_, countStr) => `${'지'.repeat(countStr.length)}난`);
 		replaces.forEach(([ key, value ]) => {
 			dateString = dateString.replace(new RegExp(key, 'g'), value);
 		});
-		
-		console.log(dateString);    // FIXME: debug
 		
 		const iso_parse = () => {
 			const RE_ISO = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:\.(?<millisecond>\d{3}))?Z$/;
@@ -672,8 +814,8 @@ class DateTime {
 			
 			const RE_RELATIVE = /(?<diff>[+-]?\d+(?:.\d*)?) *(?<unit>년|달|주|일|시간|분|초)/g;
 			const RE_RELATIVE_END = / *(?<direction>[전후])$/;
-			const RE_RELATIVE2 = /(?<diff>다+음|저+번|이번) *(?<unit>년|달|주|날|시간|분|초)/g;
-			const RE_WEEKDAY = /(?:\D+|^)(?<week>[일월화수목금토])(?:요일)?/;
+			const RE_RELATIVE2 = /(?<diff>다+음|지+난|이번) *(?<unit>년|달|주|날|시간|분|초)/g;
+			const RE_WEEKDAY = /(?:[^0-9요일]+|^)(?<week>[일월화수목금토])(?:요일)?/;
 			
 			let ret = {};
 			
@@ -702,7 +844,7 @@ class DateTime {
 			// '다음 <단위>'는 단위만 변경되면 나머지는 초기화임. 다음 시간 -> 다음 시간 0분 0초
 			while ((arr = RE_RELATIVE2.exec(dateString)) !== null) {
 				// 다다다다음 -> 다음 * 4
-				const diff_num = (arr.groups.diff.length - 1) * (arr.groups.diff[0] === '다' ? 1 : (arr.groups.diff[0] === '저' ? -1 : 0));
+				const diff_num = (arr.groups.diff.length - 1) * (arr.groups.diff[0] === '다' ? 1 : (arr.groups.diff[0] === '지' ? -1 : 0));
 				
 				if (arr.groups.unit === '주') {
 					ret['day'] = (ret['day'] ?? 0) + diff_num * 7;
@@ -1428,5 +1570,4 @@ class DateTime {
 exports.DateTime = DateTime;
 exports.Date = Date;
 exports.Time = Time;
-exports.Duration = Duration;
-exports.$D = $D;
+exports.$D = $D;    // 원래 JS의 Date 객체
