@@ -61,7 +61,8 @@ class Date {
 			let dt = new $D(this._source);
 			dt.setMilliseconds(dt.getMilliseconds() - dateObject.amount);
 			return new Date(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
-		} else {
+		}
+		else {
 			let dt = new $D(this._source);
 			dt.setFullYear(dt.getFullYear() - (dateObject.year ?? 0));
 			dt.setMonth(dt.getMonth() - (dateObject.month ?? 0));
@@ -120,7 +121,8 @@ class Time {
 			let dt = new $D(this._source);
 			dt.setMilliseconds(dt.getMilliseconds() - timeObject.amount);
 			return new Time(dt.getHours(), dt.getMinutes(), dt.getSeconds(), dt.getMilliseconds());
-		} else {
+		}
+		else {
 			let dt = new $D(this._source);
 			dt.setHours(dt.getHours() - (timeObject.hour ?? 0));
 			dt.setMinutes(dt.getMinutes() - (timeObject.minute ?? 0));
@@ -233,7 +235,7 @@ class DateTime {
 		
 		if (!cultureInfo)
 			throw new Error('Invalid locale, not found ' + this.locale);
-
+		
 		return cultureInfo['WW'][this.weekday];
 	}
 	
@@ -337,7 +339,7 @@ class DateTime {
 			}
 		});
 	}
-
+	
 	humanize() {
 		const now = DateTime.now();
 		const str = {
@@ -379,19 +381,19 @@ class DateTime {
 				else
 					str.date = this.weekdayName;    // 이번 주의 아직 지나지 않은 요일은 '이번 주' 생략
 			}
-			else if (this.year === now.year && this.month === now.month) {    // 저번 주 ~ 다음 주의 범위를 벗어나면서 달은 같은 경우
-				const week = dayDiff < 0 ? Math.ceil(dayDiff / 7) : Math.floor(dayDiff / 7);
-				const day = dayDiff - week * 7;
-				
-				const ret = [];
-				
-				if (week !== 0)
-					ret.push(`${Math.abs(week)}주`);
-				if (day !== 0)
-					ret.push(`${Math.abs(day)}일`);
-				
-				str.date = ret.join(' ') + (dayDiff < 0 ? ' 전' : ' 후');
-			}
+				// else if (this.year === now.year && this.month === now.month) {    // 저번 주 ~ 다음 주의 범위를 벗어나면서 달은 같은 경우
+				// 	const week = dayDiff < 0 ? Math.ceil(dayDiff / 7) : Math.floor(dayDiff / 7);
+				// 	const day = dayDiff - week * 7;
+				//
+				// 	const ret = [];
+				//
+				// 	if (week !== 0)
+				// 		ret.push(`${Math.abs(week)}주`);
+				// 	if (day !== 0)
+				// 		ret.push(`${Math.abs(day)}일`);
+				//
+				// 	str.date = ret.join(' ') + (dayDiff < 0 ? ' 전' : ' 후');
+			// }
 			else if (this.year === now.year)
 				str.date = `${this.month}월 ${this.day}일`;
 			else
@@ -425,7 +427,7 @@ class DateTime {
 					str.time = str.time.trim() + ` ${sign}`;
 			}
 			else
-				str.time = this.toString("t h시 mm분");
+				str.time = this.toString("t h시 m분").replace('0분', '');
 		}
 		
 		if (this.eq(now, true))
@@ -466,7 +468,7 @@ class DateTime {
 	static fromString(dateString, locale) {
 		return DateTime.parse(dateString, locale);
 	}
-
+	
 	static dehumanize(dateString, locale) {
 		return DateTime.parse(dateString, locale);
 	}
@@ -612,24 +614,31 @@ class DateTime {
 			this._source = datetimeObject.toDate();
 		}
 		else if (datetimeObject instanceof Date) {
-			this._source.setFullYear(datetimeObject.year ?? this._source.getFullYear());
-			this._source.setMonth((datetimeObject.month - 1) ?? this._source.getMonth());
-			this._source.setDate(datetimeObject.day ?? this._source.getDate());
+			this.year = datetimeObject.year;
+			this.month = datetimeObject.month;
+			this.day = datetimeObject.day;
 		}
 		else if (datetimeObject instanceof Time) {
-			this._source.setHours(datetimeObject.hour ?? this._source.getHours());
-			this._source.setMinutes(datetimeObject.minute ?? this._source.getMinutes());
-			this._source.setSeconds(datetimeObject.second ?? this._source.getSeconds());
-			this._source.setMilliseconds(datetimeObject.millisecond ?? this._source.getMilliseconds());
+			this.hour = datetimeObject.hour;
+			this.minute = datetimeObject.minute;
+			this.second = datetimeObject.second;
+			this.millisecond = datetimeObject.millisecond;
 		}
 		else {
-			this._source.setFullYear(datetimeObject.year ?? this._source.getFullYear());
-			this._source.setMonth((datetimeObject.month - 1) ?? this._source.getMonth());
-			this._source.setDate(datetimeObject.day ?? this._source.getDate());
-			this._source.setHours(datetimeObject.hour ?? this._source.getHours());
-			this._source.setMinutes(datetimeObject.minute ?? this._source.getMinutes());
-			this._source.setSeconds(datetimeObject.second ?? this._source.getSeconds());
-			this._source.setMilliseconds(datetimeObject.millisecond ?? this._source.getMilliseconds());
+			if (datetimeObject.year != null)
+				this.year = datetimeObject.year;
+			if (datetimeObject.month != null)
+				this.month = datetimeObject.month;
+			if (datetimeObject.day != null)
+				this.day = datetimeObject.day;
+			if (datetimeObject.hour != null)
+				this.hour = datetimeObject.hour;
+			if (datetimeObject.minute != null)
+				this.minute = datetimeObject.minute;
+			if (datetimeObject.second != null)
+				this.second = datetimeObject.second;
+			if (datetimeObject.millisecond != null)
+				this.millisecond = datetimeObject.millisecond;
 		}
 	}
 	
@@ -699,10 +708,14 @@ class DateTime {
 	}
 	
 	static parse(dateString, locale = 'ko-KR') {
+		return DateTime.parseWithFilteredString(dateString, locale)[0];
+	}
+	
+	static parseWithFilteredString(dateString, locale = 'ko-KR') {
 		const cultureInfo = IS_DIST
 			? JSON.parse(FileStream.read(`/sdcard/msgbot/global_modules/datetime/globalization/${locale}.json`))
 			: require(`./globalization/${locale}.json`);
-	
+		
 		if (!cultureInfo)
 			throw new Error('Invalid locale, not found ' + locale);
 		
@@ -722,11 +735,15 @@ class DateTime {
 			dateString = dateString.replace(new RegExp(key, 'g'), value);
 		});
 		
+		let filteredString = dateString;
+		
 		const iso_parse = () => {
 			const RE_ISO = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:\.(?<millisecond>\d{3}))?Z$/;
 			const isoMatch = dateString.match(RE_ISO);
 			
 			if (isoMatch) {
+				filteredString = filteredString.replace(isoMatch[0], '');
+				
 				return {
 					year: isoMatch.groups.year,
 					month: isoMatch.groups.month,
@@ -740,35 +757,100 @@ class DateTime {
 		};
 		
 		const common_parse = () => {
-			const RE_DATE = /(?:(?<year>\d{4})[-.\/년])? *(?<month>\d{1,2})[-.\/월] *(?<day>\d{1,2})[.일]?/;
-			const RE_TIME = /(?<hour>\d{1,2}) *[:시] *(?:(?<minute>\d{1,2}) *[:분]? *(?:(?<second>\d{1,2})초?)?)?/;
-
-			const dateMatch = dateString.match(RE_DATE);
-			const timeMatch = dateString.match(RE_TIME);
-
-			let year = dateMatch?.groups?.year;
-			let month = dateMatch?.groups?.month;
-			let day = dateMatch?.groups?.day;
-			let hour = timeMatch?.groups?.hour;
-			let minute = timeMatch?.groups?.minute;
-			let second = timeMatch?.groups?.second;
-			let millisecond = timeMatch?.groups?.millisecond;
+			let year, month, day, hour, minute, second, millisecond;
 			
-			if (year)
+			const mix = {
+				ymd: /(?<year>\d{4})[-.\/] *(?<month>\d{1,2})[-.\/] *(?<day>\d{1,2})\.?/,
+				md: /(?<month>\d{1,2})[-.\/] *(?<day>\d{1,2})\.?/,
+				hms: /(?<hour>\d{1,2}) *: *(?<minute>\d{1,2}) *: *(?<second>\d{1,2})/,
+				hm: /(?<hour>\d{1,2}) *: *(?<minute>\d{1,2})/,
+				ms: /(?<minute>\d{1,2}) *: *(?<second>\d{1,2})/,
+			};
+			
+			const matchedMix = {};
+			for (let key in mix) {
+				const match = dateString.match(mix[key]);
+				if (match)
+					matchedMix[key] = match;
+			}
+			
+			if (matchedMix.ymd) {
+				filteredString = filteredString.replace(matchedMix.ymd[0], '');
+				
+				year = matchedMix.ymd.groups.year;
+				month = matchedMix.ymd.groups.month;
+				day = matchedMix.ymd.groups.day;
+			}
+			else if (matchedMix.md) {
+				filteredString = filteredString.replace(matchedMix.md[0], '');
+				
+				year = DateTime.now().year;
+				month = matchedMix.md.groups.month;
+				day = matchedMix.md.groups.day;
+			}
+			
+			if (matchedMix.hms) {
+				filteredString = filteredString.replace(matchedMix.hms[0], '');
+				
+				hour = matchedMix.hms.groups.hour;
+				minute = matchedMix.hms.groups.minute;
+				second = matchedMix.hms.groups.second;
+			}
+			else if (matchedMix.hm) {
+				filteredString = filteredString.replace(matchedMix.hm[0], '');
+				
+				hour = matchedMix.hm.groups.hour;
+				minute = matchedMix.hm.groups.minute;
+			}
+			else if (matchedMix.ms) {
+				filteredString = filteredString.replace(matchedMix.ms[0], '');
+				
+				minute = matchedMix.ms.groups.minute;
+				second = matchedMix.ms.groups.second;
+			}
+			
+			const re = {
+				year: /\d{4}(?=년)/,
+				month: /\d{1,2}(?=월)/,
+				day: /\d{1,2}(?=일)/,
+				hour: /\d{1,2}(?=시)/,
+				minute: /\d{1,2}(?=분)/,
+				second: /\d{1,2}(?=초)/,
+				millisecond: /\d{1,3}(?=밀리초)/
+			};
+			
+			const matched = {};
+			for (let key in re) {
+				const match = dateString.match(re[key]);
+				if (match) {
+					filteredString = filteredString.replace(match[0], '');
+					matched[key] = match[0];
+				}
+			}
+			
+			year ??= matched.year;
+			month ??= matched.month;
+			day ??= matched.day;
+			hour ??= matched.hour;
+			minute ??= matched.minute;
+			second ??= matched.second;
+			millisecond ??= matched.millisecond;
+			
+			if (year != null)
 				year = parseInt(year);
-			if (month)
+			if (month != null)
 				month = parseInt(month);
-			if (day)
+			if (day != null)
 				day = parseInt(day);
-			if (hour)
+			if (hour != null)
 				hour = parseInt(hour);
-			if (minute)
+			if (minute != null)
 				minute = parseInt(minute);
-			if (second)
+			if (second != null)
 				second = parseInt(second);
-			if (millisecond)
+			if (millisecond != null)
 				millisecond = parseInt(millisecond);
-
+			
 			// 보통 '3시'는 '오후 3시'로 해석되어야 함.
 			// 자동으로 오후로 해석되는 시간의 범위: 1시 ~ 9시
 			let meridian = (1 <= hour && hour <= 9) ? 'pm' : 'am';
@@ -804,29 +886,58 @@ class DateTime {
 				day = now.day + 1;
 				hour = 0;
 			}
-
-			return { year, month, day, hour, minute, second, millisecond };
+			
+			let ret = {};
+			
+			if (year !== undefined)
+				ret.year = year;
+			if (month !== undefined)
+				ret.month = month;
+			if (day !== undefined)
+				ret.day = day;
+			if (hour !== undefined)
+				ret.hour = hour;
+			if (minute !== undefined)
+				ret.minute = minute;
+			if (second !== undefined)
+				ret.second = second;
+			if (millisecond !== undefined)
+				ret.millisecond = millisecond;
+			
+			return ret;
 		};
 		
 		const relative_parse = () => {
-			const unitMap = { '년': 'year', '달': 'month', '일': 'day', '날': 'day', '시간': 'hour', '분': 'minute', '초': 'second' };
+			const unitMap = {
+				'년': 'year',
+				'해': 'year',
+				'달': 'month',
+				'일': 'day',
+				'날': 'day',
+				'시간': 'hour',
+				'분': 'minute',
+				'초': 'second'
+			};
 			const units = [ 'year', 'month', 'day', 'hour', 'minute', 'second' ];
 			
 			const RE_RELATIVE = /(?<diff>[+-]?\d+(?:.\d*)?) *(?<unit>년|달|주|일|시간|분|초)/g;
-			const RE_RELATIVE_END = / *(?<direction>[전후])$/;
-			const RE_RELATIVE2 = /(?<diff>다+음|지+난|이번) *(?<unit>년|달|주|날|시간|분|초)/g;
-			const RE_WEEKDAY = /(?:[^0-9요일]+|^)(?<week>[일월화수목금토])(?:요일)?/;
+			const RE_RELATIVE_END = /[^오]+(?<direction>[전후])/;
+			const RE_RELATIVE2 = /(?<diff>다+음|지+난|이번) *(?<unit>해|달|주|날|시간|분|초)/g;
+			const RE_WEEKDAY = /(?<week>[일월화수목금토])(?:요일)?(?= +|$)/;
 			
 			let ret = {};
 			
 			let arr, arr2;
 			const now = DateTime.now();
-			const set = (dir, diff, factor=1) => dir === '전' ? -parseInt(diff) * factor : parseInt(diff) * factor;
+			const set = (dir, diff, factor = 1) => dir === '전' ? -parseInt(diff) * factor : parseInt(diff) * factor;
 			
 			// 'n<단위> 후'는 단위가 변경되고 나머지는 현재 시간을 따름. 3시간 후 -> 3시간 후 현재시간
 			arr2 = RE_RELATIVE_END.exec(dateString);
 			if (arr2 !== null) {
+				filteredString = filteredString.replace(arr2[0], '');
 				while ((arr = RE_RELATIVE.exec(dateString)) !== null) {
+					filteredString = filteredString.replace(arr[0], '');
+					
 					let key = unitMap[arr.groups.unit];
 					
 					if (arr.groups.unit === '주') {
@@ -843,6 +954,8 @@ class DateTime {
 			
 			// '다음 <단위>'는 단위만 변경되면 나머지는 초기화임. 다음 시간 -> 다음 시간 0분 0초
 			while ((arr = RE_RELATIVE2.exec(dateString)) !== null) {
+				filteredString = filteredString.replace(arr[0], '');
+				
 				// 다다다다음 -> 다음 * 4
 				const diff_num = (arr.groups.diff.length - 1) * (arr.groups.diff[0] === '다' ? 1 : (arr.groups.diff[0] === '지' ? -1 : 0));
 				
@@ -857,11 +970,17 @@ class DateTime {
 			// 일월화수목금토가 일주일이라고 하면 현재가 수요일일 때, 다음주 일요일은 5일 후. 그러나 평상시는 이 날을 그냥 이번주 일요일이라고 함.
 			// 즉 현실에 맞게 일주일을 조금 다르게 대응시킴.
 			if ((arr = RE_WEEKDAY.exec(dateString)) !== null) {
-				const today = now.weekday - 1;   // 일월화수목금토가 아니고 월화수목금토일
-				const start = ((ret['day'] ?? 0) + today) % 7;
-				const dest = DateTime.getWeekDayFromName(arr.groups.week, true);
-				
-				ret['day'] = (ret['day'] ?? 0) + (dest - start);
+				if (arr.index === 0 || /[^0-9요]+/.test(dateString.slice(0, arr.index))) {
+					// /(?<=[^0-9요]+|^)(?<week>[일월화수목금토])(?:요일)?(?= +|$)/ 에서 후방탐색연산자 사용이 안되어서 이렇게 대신함
+					
+					filteredString = filteredString.replace(arr[0], '');
+					
+					const today = now.weekday - 1;   // 일월화수목금토가 아니고 월화수목금토일
+					const start = ((ret['day'] ?? 0) + today) % 7;
+					const dest = DateTime.getWeekDayFromName(arr.groups.week, true);
+					
+					ret['day'] = (ret['day'] ?? 0) + (dest - start);
+				}
 			}
 			
 			return ret;
@@ -869,10 +988,13 @@ class DateTime {
 		
 		const iso_parsed = iso_parse();
 		if (iso_parsed !== undefined)
-			return DateTime.fromObject(iso_parsed);
+			return [ DateTime.fromObject(iso_parsed), filteredString.trim() ];
 		
 		const common_parsed = common_parse();
 		const relative_parsed = relative_parse();
+		
+		// console.log(common_parsed, relative_parsed);    // FIXME: debug
+		
 		const units = [ 'year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond' ];
 		
 		// '3월 4일' 이라고 하면 '현재년도 3월 4일 0시 0분 0초'로 해석되어야 함. 즉, 마지막으로 데이터가 존재하는 unit 까지만 현재 날짜로 지정.
@@ -902,7 +1024,7 @@ class DateTime {
 				parsed[unit] = common_parsed[unit] ?? relative_parsed[unit];
 		}
 		
-		return DateTime.fromObject(parsed);
+		return [ DateTime.fromObject(parsed), filteredString.trim() ];
 	}
 	
 	// static parse(dateString, locale = 'ko-KR') {
