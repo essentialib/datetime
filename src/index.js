@@ -427,7 +427,7 @@ class DateTime {
 					str.time = str.time.trim() + ` ${sign}`;
 			}
 			else
-				str.time = this.toString("t h시 m분").replace('0분', '');
+				str.time = this.toString("t h시 m분").replace(' 0분', '');
 		}
 		
 		if (this.eq(now, true))
@@ -736,13 +736,14 @@ class DateTime {
 		});
 		
 		let filteredString = dateString;
+		const filtering = value => filteredString = filteredString.replace(new RegExp(value + '\\S*'), '');
 		
 		const iso_parse = () => {
 			const RE_ISO = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:\.(?<millisecond>\d{3}))?Z$/;
 			const isoMatch = dateString.match(RE_ISO);
 			
 			if (isoMatch) {
-				filteredString = filteredString.replace(isoMatch[0], '');
+				filtering(isoMatch[0]);
 				
 				return {
 					year: isoMatch.groups.year,
@@ -775,35 +776,35 @@ class DateTime {
 			}
 			
 			if (matchedMix.ymd) {
-				filteredString = filteredString.replace(matchedMix.ymd[0], '');
+				filtering(matchedMix.ymd[0]);
 				
 				year = matchedMix.ymd.groups.year;
 				month = matchedMix.ymd.groups.month;
 				day = matchedMix.ymd.groups.day;
 			}
 			else if (matchedMix.md) {
-				filteredString = filteredString.replace(matchedMix.md[0], '');
+				filtering(matchedMix.md[0]);
 				
 				year = DateTime.now().year;
 				month = matchedMix.md.groups.month;
 				day = matchedMix.md.groups.day;
 			}
 			
-			if (matchedMix.hms) {
-				filteredString = filteredString.replace(matchedMix.hms[0], '');
+			if (matchedMix.hms) {				
+				filtering(matchedMix.hms[0]);
 				
 				hour = matchedMix.hms.groups.hour;
 				minute = matchedMix.hms.groups.minute;
 				second = matchedMix.hms.groups.second;
 			}
 			else if (matchedMix.hm) {
-				filteredString = filteredString.replace(matchedMix.hm[0], '');
+				filtering(matchedMix.hm[0]);
 				
 				hour = matchedMix.hm.groups.hour;
 				minute = matchedMix.hm.groups.minute;
 			}
 			else if (matchedMix.ms) {
-				filteredString = filteredString.replace(matchedMix.ms[0], '');
+				filtering(matchedMix.ms[0]);
 				
 				minute = matchedMix.ms.groups.minute;
 				second = matchedMix.ms.groups.second;
@@ -823,7 +824,7 @@ class DateTime {
 			for (let key in re) {
 				const match = dateString.match(re[key]);
 				if (match) {
-					filteredString = filteredString.replace(match[0], '');
+					filtering(match[0]);
 					matched[key] = match[0];
 				}
 			}
@@ -854,10 +855,23 @@ class DateTime {
 			// 보통 '3시'는 '오후 3시'로 해석되어야 함.
 			// 자동으로 오후로 해석되는 시간의 범위: 1시 ~ 9시
 			let meridian = (1 <= hour && hour <= 9) ? 'pm' : 'am';
-			if (dateString.indexOf('오전') !== -1 || dateString.indexOf('am') !== -1)
+			
+			if (dateString.indexOf('오전') !== -1) {
+				filtering('오전');
 				meridian = 'am';
-			else if (dateString.indexOf('오후') !== -1 || dateString.indexOf('pm') !== -1)
+			}
+			else if (dateString.indexOf('오후') !== -1) {
+				filtering('오후');
 				meridian = 'pm';
+			}
+			else if (dateString.indexOf('am') !== -1) {
+				filtering('am');
+				meridian = 'am';
+			}
+			else if (dateString.indexOf('pm') !== -1) {
+				filtering('pm');
+				meridian = 'pm';
+			}
 			
 			if (hour !== undefined && hour < 12 && meridian === 'pm')
 				hour += 12;
@@ -865,24 +879,29 @@ class DateTime {
 			const now = DateTime.now();
 			
 			if (dateString.indexOf('아침') !== -1) {
+				filtering('아침');
 				day = now.gt({ hour: 7, minute: 30 }) ? now.day + 1 : now.day;
 				hour = 7;
 				minute = 30;
 			}
 			else if (dateString.indexOf('정오') !== -1) {
+				filtering('정오');
 				day = now.gt({ hour: 12 }) ? now.day + 1 : now.day;
 				hour = 12;
 			}
 			else if (dateString.indexOf('점심') !== -1) {
+				filtering('점심');
 				day = now.gt({ hour: 12, minute: 30 }) ? now.day + 1 : now.day;
 				hour = 12;
 				minute = 30;
 			}
 			else if (dateString.indexOf('저녁') !== -1) {
+				filtering('저녁');
 				day = now.gt({ hour: 18 }) ? now.day + 1 : now.day;
 				hour = 18;
 			}
 			else if (dateString.indexOf('자정') !== -1) {
+				filtering('자정');
 				day = now.day + 1;
 				hour = 0;
 			}
@@ -923,7 +942,7 @@ class DateTime {
 			const RE_RELATIVE = /(?<diff>[+-]?\d+(?:.\d*)?) *(?<unit>년|달|주|일|시간|분|초)/g;
 			const RE_RELATIVE_END = /[^오]+(?<direction>[전후])/;
 			const RE_RELATIVE2 = /(?<diff>다+음|지+난|이번) *(?<unit>해|달|주|날|시간|분|초)/g;
-			const RE_WEEKDAY = /(?<week>[일월화수목금토])(?:요일)?(?= +|$)/;
+			const RE_WEEKDAY = /(?<week>[일월화수목금토])요일(?= +|$)/;
 			
 			let ret = {};
 			
@@ -934,9 +953,9 @@ class DateTime {
 			// 'n<단위> 후'는 단위가 변경되고 나머지는 현재 시간을 따름. 3시간 후 -> 3시간 후 현재시간
 			arr2 = RE_RELATIVE_END.exec(dateString);
 			if (arr2 !== null) {
-				filteredString = filteredString.replace(arr2[0], '');
+				filtering(arr2[0]);
 				while ((arr = RE_RELATIVE.exec(dateString)) !== null) {
-					filteredString = filteredString.replace(arr[0], '');
+					filtering(arr[0]);
 					
 					let key = unitMap[arr.groups.unit];
 					
@@ -954,7 +973,7 @@ class DateTime {
 			
 			// '다음 <단위>'는 단위만 변경되면 나머지는 초기화임. 다음 시간 -> 다음 시간 0분 0초
 			while ((arr = RE_RELATIVE2.exec(dateString)) !== null) {
-				filteredString = filteredString.replace(arr[0], '');
+				filtering(arr[0]);
 				
 				// 다다다다음 -> 다음 * 4
 				const diff_num = (arr.groups.diff.length - 1) * (arr.groups.diff[0] === '다' ? 1 : (arr.groups.diff[0] === '지' ? -1 : 0));
@@ -971,13 +990,15 @@ class DateTime {
 			// 즉 현실에 맞게 일주일을 조금 다르게 대응시킴.
 			if ((arr = RE_WEEKDAY.exec(dateString)) !== null) {
 				if (arr.index === 0 || /[^0-9요]+/.test(dateString.slice(0, arr.index))) {
-					// /(?<=[^0-9요]+|^)(?<week>[일월화수목금토])(?:요일)?(?= +|$)/ 에서 후방탐색연산자 사용이 안되어서 이렇게 대신함
+					// /(?<=[^0-9요]+|^)(?<week>[일월화수목금토])요일(?= +|$)/ 에서 후방탐색연산자 사용이 안되어서 이렇게 대신함
 					
-					filteredString = filteredString.replace(arr[0], '');
+					filtering(arr[0]);
 					
 					const today = now.weekday - 1;   // 일월화수목금토가 아니고 월화수목금토일
 					const start = ((ret['day'] ?? 0) + today) % 7;
 					const dest = DateTime.getWeekDayFromName(arr.groups.week, true);
+					
+					// console.log(today, start, dest);    // FIXME: debug
 					
 					ret['day'] = (ret['day'] ?? 0) + (dest - start);
 				}
@@ -985,6 +1006,8 @@ class DateTime {
 			
 			return ret;
 		};
+		
+		filteredString = filteredString.replace(/ +/g, ' ');
 		
 		const iso_parsed = iso_parse();
 		if (iso_parsed !== undefined)

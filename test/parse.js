@@ -38,7 +38,7 @@ parse = string => {
 // parse`다다음 주`    // ✅
 // parse`다다음 주 일요일`    // ✅
 // parse`일요일`  // ✅
-// parse`일`    // ✅
+// parse`토요일`    // ✅
 // parse`이번 주 일요일` // ✅
 // parse`저저저번주일요일` // ✅
 // parse`이번 해` // ✅

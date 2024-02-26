@@ -1,26 +1,14 @@
 "use strict";
 
-var _Parser;
-function _callSuper(t, o, e) { return o = _getPrototypeOf(o), _possibleConstructorReturn(t, _isNativeReflectConstruct() ? Reflect.construct(o, e || [], _getPrototypeOf(t).constructor) : o.apply(t, e)); }
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _wrapRegExp() { _wrapRegExp = function _wrapRegExp(e, r) { return new BabelRegExp(e, void 0, r); }; var e = RegExp.prototype, r = new WeakMap(); function BabelRegExp(e, t, p) { var o = new RegExp(e, t); return r.set(o, p || r.get(e)), _setPrototypeOf(o, BabelRegExp.prototype); } function buildGroups(e, t) { var p = r.get(t); return Object.keys(p).reduce(function (r, t) { var o = p[t]; if ("number" == typeof o) r[t] = e[o];else { for (var i = 0; void 0 === e[o[i]] && i + 1 < o.length;) i++; r[t] = e[o[i]]; } return r; }, Object.create(null)); } return _inherits(BabelRegExp, RegExp), BabelRegExp.prototype.exec = function (r) { var t = e.exec.call(this, r); if (t) { t.groups = buildGroups(t, this); var p = t.indices; p && (p.groups = buildGroups(p, this)); } return t; }, BabelRegExp.prototype[Symbol.replace] = function (t, p) { if ("string" == typeof p) { var o = r.get(this); return e[Symbol.replace].call(this, t, p.replace(/\$<([^>]+)>/g, function (e, r) { var t = o[r]; return "$" + (Array.isArray(t) ? t.join("$") : t); })); } if ("function" == typeof p) { var i = this; return e[Symbol.replace].call(this, t, function () { var e = arguments; return "object" != _typeof(e[e.length - 1]) && (e = [].slice.call(e)).push(buildGroups(e, i)), p.apply(this, e); }); } return e[Symbol.replace].call(this, t, p); }, _wrapRegExp.apply(this, arguments); }
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
@@ -50,17 +38,17 @@ var Duration = /*#__PURE__*/function () {
   }, {
     key: "second",
     get: function get() {
-      return Math.floor(this.amount / 1000) % 86400;
+      return (this.amount >= 0 ? Math.floor(this.amount / 1000) : Math.ceil(this.amount / 1000)) % 86400;
     }
   }, {
     key: "day",
     get: function get() {
-      return Math.floor(this.amount / 86400000);
+      return this.amount >= 0 ? Math.floor(this.amount / 86400000) : Math.ceil(this.amount / 86400000);
     }
   }, {
     key: "toString",
     value: function toString() {
-      return "duration(day=".concat(this.day, ", second=").concat(this.second, ", millisecond=").concat(this.millisecond, ")");
+      return "Duration(day=".concat(this.day, ", second=").concat(this.second, ", millisecond=").concat(this.millisecond, ")");
     }
   }]);
   return Duration;
@@ -86,9 +74,33 @@ var Date = /*#__PURE__*/function () {
       return this._source.getDate();
     }
   }, {
+    key: "eq",
+    value: function eq(dateObject) {
+      var year = dateObject.year,
+        month = dateObject.month,
+        day = dateObject.day;
+      return this.year === year && this.month === month && this.day === day;
+    }
+  }, {
+    key: "sub",
+    value: function sub(dateObject) {
+      if (dateObject instanceof Date) return new Duration(this._source.getTime() - dateObject._source.getTime());else if (dateObject instanceof Duration) {
+        var dt = new $D(this._source);
+        dt.setMilliseconds(dt.getMilliseconds() - dateObject.amount);
+        return new Date(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
+      } else {
+        var _dateObject$year, _dateObject$month, _dateObject$day;
+        var _dt = new $D(this._source);
+        _dt.setFullYear(_dt.getFullYear() - ((_dateObject$year = dateObject.year) !== null && _dateObject$year !== void 0 ? _dateObject$year : 0));
+        _dt.setMonth(_dt.getMonth() - ((_dateObject$month = dateObject.month) !== null && _dateObject$month !== void 0 ? _dateObject$month : 0));
+        _dt.setDate(_dt.getDate() - ((_dateObject$day = dateObject.day) !== null && _dateObject$day !== void 0 ? _dateObject$day : 0));
+        return new Date(_dt.getFullYear(), _dt.getMonth() + 1, _dt.getDate());
+      }
+    }
+  }, {
     key: "toString",
     value: function toString() {
-      return "date(year=".concat(this.year, ", month=").concat(this.month, ", day=").concat(this.day, ")");
+      return "Date(year=".concat(this.year, ", month=").concat(this.month, ", day=").concat(this.day, ")");
     }
   }, {
     key: "toObject",
@@ -132,9 +144,35 @@ var Time = /*#__PURE__*/function () {
       return this._source.getMilliseconds();
     }
   }, {
+    key: "eq",
+    value: function eq(timeObject) {
+      var hour = timeObject.hour,
+        minute = timeObject.minute,
+        second = timeObject.second,
+        millisecond = timeObject.millisecond;
+      return this.hour === hour && this.minute === minute && this.second === second && this.millisecond === millisecond;
+    }
+  }, {
+    key: "sub",
+    value: function sub(timeObject) {
+      if (timeObject instanceof Time) return new Duration(this._source.getTime() - timeObject._source.getTime());else if (timeObject instanceof Duration) {
+        var dt = new $D(this._source);
+        dt.setMilliseconds(dt.getMilliseconds() - timeObject.amount);
+        return new Time(dt.getHours(), dt.getMinutes(), dt.getSeconds(), dt.getMilliseconds());
+      } else {
+        var _timeObject$hour, _timeObject$minute, _timeObject$second, _timeObject$milliseco;
+        var _dt2 = new $D(this._source);
+        _dt2.setHours(_dt2.getHours() - ((_timeObject$hour = timeObject.hour) !== null && _timeObject$hour !== void 0 ? _timeObject$hour : 0));
+        _dt2.setMinutes(_dt2.getMinutes() - ((_timeObject$minute = timeObject.minute) !== null && _timeObject$minute !== void 0 ? _timeObject$minute : 0));
+        _dt2.setSeconds(_dt2.getSeconds() - ((_timeObject$second = timeObject.second) !== null && _timeObject$second !== void 0 ? _timeObject$second : 0));
+        _dt2.setMilliseconds(_dt2.getMilliseconds() - ((_timeObject$milliseco = timeObject.millisecond) !== null && _timeObject$milliseco !== void 0 ? _timeObject$milliseco : 0));
+        return new Time(_dt2.getHours(), _dt2.getMinutes(), _dt2.getSeconds(), _dt2.getMilliseconds());
+      }
+    }
+  }, {
     key: "toString",
     value: function toString() {
-      return "time(hour=".concat(this.hour, ", minute=").concat(this.minute, ", second=").concat(this.second, ", millisecond=").concat(this.millisecond, ")");
+      return "Time(hour=".concat(this.hour, ", minute=").concat(this.minute, ", second=").concat(this.second, ", millisecond=").concat(this.millisecond, ")");
     }
   }, {
     key: "toObject",
@@ -169,11 +207,11 @@ var DateTime = /*#__PURE__*/function () {
       return new Date(this._source.getFullYear(), this._source.getMonth() + 1, this._source.getDate());
     },
     set: function set(dateObject) {
-      var _dateObject$year, _ref, _dateObject$day;
+      var _dateObject$year2, _ref, _dateObject$day2;
       if (!(dateObject instanceof Date)) throw new TypeError('`date` must be date');
-      this._source.setFullYear((_dateObject$year = dateObject.year) !== null && _dateObject$year !== void 0 ? _dateObject$year : this._source.getFullYear());
+      this._source.setFullYear((_dateObject$year2 = dateObject.year) !== null && _dateObject$year2 !== void 0 ? _dateObject$year2 : this._source.getFullYear());
       this._source.setMonth((_ref = dateObject.month - 1) !== null && _ref !== void 0 ? _ref : this._source.getMonth());
-      this._source.setDate((_dateObject$day = dateObject.day) !== null && _dateObject$day !== void 0 ? _dateObject$day : this._source.getDate());
+      this._source.setDate((_dateObject$day2 = dateObject.day) !== null && _dateObject$day2 !== void 0 ? _dateObject$day2 : this._source.getDate());
     }
   }, {
     key: "time",
@@ -181,12 +219,12 @@ var DateTime = /*#__PURE__*/function () {
       return new Time(this._source.getHours(), this._source.getMinutes(), this._source.getSeconds(), this._source.getMilliseconds());
     },
     set: function set(timeObject) {
-      var _timeObject$hour, _timeObject$minute, _timeObject$second, _timeObject$milliseco;
+      var _timeObject$hour2, _timeObject$minute2, _timeObject$second2, _timeObject$milliseco2;
       if (!(timeObject instanceof Time)) throw new TypeError('`time` must be time');
-      this._source.setHours((_timeObject$hour = timeObject.hour) !== null && _timeObject$hour !== void 0 ? _timeObject$hour : this._source.getHours());
-      this._source.setMinutes((_timeObject$minute = timeObject.minute) !== null && _timeObject$minute !== void 0 ? _timeObject$minute : this._source.getMinutes());
-      this._source.setSeconds((_timeObject$second = timeObject.second) !== null && _timeObject$second !== void 0 ? _timeObject$second : this._source.getSeconds());
-      this._source.setMilliseconds((_timeObject$milliseco = timeObject.millisecond) !== null && _timeObject$milliseco !== void 0 ? _timeObject$milliseco : this._source.getMilliseconds());
+      this._source.setHours((_timeObject$hour2 = timeObject.hour) !== null && _timeObject$hour2 !== void 0 ? _timeObject$hour2 : this._source.getHours());
+      this._source.setMinutes((_timeObject$minute2 = timeObject.minute) !== null && _timeObject$minute2 !== void 0 ? _timeObject$minute2 : this._source.getMinutes());
+      this._source.setSeconds((_timeObject$second2 = timeObject.second) !== null && _timeObject$second2 !== void 0 ? _timeObject$second2 : this._source.getSeconds());
+      this._source.setMilliseconds((_timeObject$milliseco2 = timeObject.millisecond) !== null && _timeObject$milliseco2 !== void 0 ? _timeObject$milliseco2 : this._source.getMilliseconds());
     }
   }, {
     key: "year",
@@ -327,7 +365,79 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "humanize",
     value: function humanize() {
-      // TODO: implement
+      var now = DateTime.now();
+      var str = {
+        date: '',
+        time: ''
+      };
+      var dayDiff = this.date.sub(now.date).day;
+      var secDiff = Math.ceil(this.sub(now).amount / 1000);
+      var specials = {};
+      specials[-2] = '그제';
+      specials[-1] = '어제';
+      specials[0] = '오늘';
+      specials[1] = '내일';
+      specials[2] = '모레';
+      var isSpecial = false;
+      for (var i = -2; i <= 2; i++) {
+        var dt = now.add({
+          day: i
+        });
+        if (this.date.eq(dt.date)) {
+          str.date = specials[i];
+          isSpecial = true;
+          break;
+        }
+      }
+      if (!isSpecial) {
+        var nowWeekday = now.weekday - 1; // 월화수목금토일
+        var lastWeekMonDiff = -7 - nowWeekday; // 저번 주 월요일까지의 날짜 차이
+        var nextWeekSunDiff = 13 - nowWeekday; // 다음 주 일요일까지의 날짜 차이
+
+        if (lastWeekMonDiff <= dayDiff && dayDiff <= nextWeekSunDiff) {
+          // 저번 주 ~ 다음 주
+          if (dayDiff - lastWeekMonDiff < 7) str.date = "\uC9C0\uB09C \uC8FC ".concat(this.weekdayName);else if (nextWeekSunDiff - dayDiff < 7) str.date = "\uB2E4\uC74C \uC8FC ".concat(this.weekdayName);else if (dayDiff < 0) str.date = "\uC774\uBC88 \uC8FC ".concat(this.weekdayName); // 이번 주의 지나간 요일은 '이번 주' 포함
+          else str.date = this.weekdayName; // 이번 주의 아직 지나지 않은 요일은 '이번 주' 생략
+        }
+        // else if (this.year === now.year && this.month === now.month) {    // 저번 주 ~ 다음 주의 범위를 벗어나면서 달은 같은 경우
+        // 	const week = dayDiff < 0 ? Math.ceil(dayDiff / 7) : Math.floor(dayDiff / 7);
+        // 	const day = dayDiff - week * 7;
+        //
+        // 	const ret = [];
+        //
+        // 	if (week !== 0)
+        // 		ret.push(`${Math.abs(week)}주`);
+        // 	if (day !== 0)
+        // 		ret.push(`${Math.abs(day)}일`);
+        //
+        // 	str.date = ret.join(' ') + (dayDiff < 0 ? ' 전' : ' 후');
+        // }
+        else if (this.year === now.year) str.date = "".concat(this.month, "\uC6D4 ").concat(this.day, "\uC77C");else str.date = "".concat(this.year, "\uB144 ").concat(this.month, "\uC6D4 ").concat(this.day, "\uC77C");
+      }
+      var isRelative = false;
+      if (this.hour === 0 && this.minute === 0 && this.second === 0) str.time = ""; // '오늘 자정'은 마치 내일 0시를 말하는 것 같아서 그냥 '오늘'로 표시
+      else if (this.hour === 12 && this.minute === 0 && this.second === 0) str.time = "정오";else {
+        var sign = secDiff < 0 ? '전' : '후';
+        var amountSec = Math.abs(secDiff);
+        var hour = Math.floor(amountSec / 3600);
+        var minute = Math.floor(amountSec % 3600 / 60);
+        var second = amountSec % 60;
+        if (hour < 6) {
+          isRelative = true;
+          if (hour !== 0) str.time += "".concat(hour, "\uC2DC\uAC04 ");
+          if (minute !== 0) str.time += "".concat(minute, "\uBD84 ");
+          // if (second !== 0)
+          // 	str.time += `${second}초 `;
+          // 초와 밀리초는 수행 시간에도 영향을 받고, 너무 세부적이므로 무시. 나중에 config 로 설정할 수 있게?
+
+          if (str.time !== '') str.time = str.time.trim() + " ".concat(sign);
+        } else str.time = this.toString("t h시 m분").replace('0분', '');
+      }
+      if (this.eq(now, true)) return '지금';else if (isRelative)
+        // 상대적인 시간이면 최대 6시간 차이니까 날짜를 생략
+        return str.time;else if (str.date === '오늘' && str.time !== '')
+        // 오늘인데 시간이 있으면 날짜를 생략
+        return str.time;else return "".concat(str.date, " ").concat(str.time).trim();
     }
   }, {
     key: "toNumber",
@@ -337,7 +447,7 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "toDate",
     value: function toDate() {
-      return this._source;
+      return new $D(this._source); // Date 객체의 깊은 복사
     }
   }, {
     key: "toObject",
@@ -362,16 +472,16 @@ var DateTime = /*#__PURE__*/function () {
         return new DateTime(dt, this.locale);
       } else {
         var _datetimeObject$year, _datetimeObject$month, _datetimeObject$day, _datetimeObject$week, _datetimeObject$hour, _datetimeObject$minut, _datetimeObject$secon, _datetimeObject$milli;
-        var _dt = this.toDate();
-        _dt.setFullYear(_dt.getFullYear() + ((_datetimeObject$year = datetimeObject.year) !== null && _datetimeObject$year !== void 0 ? _datetimeObject$year : 0));
-        _dt.setMonth(_dt.getMonth() + ((_datetimeObject$month = datetimeObject.month) !== null && _datetimeObject$month !== void 0 ? _datetimeObject$month : 0));
-        _dt.setDate(_dt.getDate() + ((_datetimeObject$day = datetimeObject.day) !== null && _datetimeObject$day !== void 0 ? _datetimeObject$day : 0));
-        _dt.setDate(_dt.getDate() + 7 * ((_datetimeObject$week = datetimeObject.week) !== null && _datetimeObject$week !== void 0 ? _datetimeObject$week : 0));
-        _dt.setHours(_dt.getHours() + ((_datetimeObject$hour = datetimeObject.hour) !== null && _datetimeObject$hour !== void 0 ? _datetimeObject$hour : 0));
-        _dt.setMinutes(_dt.getMinutes() + ((_datetimeObject$minut = datetimeObject.minute) !== null && _datetimeObject$minut !== void 0 ? _datetimeObject$minut : 0));
-        _dt.setSeconds(_dt.getSeconds() + ((_datetimeObject$secon = datetimeObject.second) !== null && _datetimeObject$secon !== void 0 ? _datetimeObject$secon : 0));
-        _dt.setMilliseconds(_dt.getMilliseconds() + ((_datetimeObject$milli = datetimeObject.millisecond) !== null && _datetimeObject$milli !== void 0 ? _datetimeObject$milli : 0));
-        return new DateTime(_dt, this.locale);
+        var _dt3 = this.toDate();
+        _dt3.setFullYear(_dt3.getFullYear() + ((_datetimeObject$year = datetimeObject.year) !== null && _datetimeObject$year !== void 0 ? _datetimeObject$year : 0));
+        _dt3.setMonth(_dt3.getMonth() + ((_datetimeObject$month = datetimeObject.month) !== null && _datetimeObject$month !== void 0 ? _datetimeObject$month : 0));
+        _dt3.setDate(_dt3.getDate() + ((_datetimeObject$day = datetimeObject.day) !== null && _datetimeObject$day !== void 0 ? _datetimeObject$day : 0));
+        _dt3.setDate(_dt3.getDate() + 7 * ((_datetimeObject$week = datetimeObject.week) !== null && _datetimeObject$week !== void 0 ? _datetimeObject$week : 0));
+        _dt3.setHours(_dt3.getHours() + ((_datetimeObject$hour = datetimeObject.hour) !== null && _datetimeObject$hour !== void 0 ? _datetimeObject$hour : 0));
+        _dt3.setMinutes(_dt3.getMinutes() + ((_datetimeObject$minut = datetimeObject.minute) !== null && _datetimeObject$minut !== void 0 ? _datetimeObject$minut : 0));
+        _dt3.setSeconds(_dt3.getSeconds() + ((_datetimeObject$secon = datetimeObject.second) !== null && _datetimeObject$secon !== void 0 ? _datetimeObject$secon : 0));
+        _dt3.setMilliseconds(_dt3.getMilliseconds() + ((_datetimeObject$milli = datetimeObject.millisecond) !== null && _datetimeObject$milli !== void 0 ? _datetimeObject$milli : 0));
+        return new DateTime(_dt3, this.locale);
       }
     }
   }, {
@@ -383,16 +493,16 @@ var DateTime = /*#__PURE__*/function () {
         return new DateTime(dt, this.locale);
       } else {
         var _datetimeObject$year2, _datetimeObject$month2, _datetimeObject$day2, _datetimeObject$week2, _datetimeObject$hour2, _datetimeObject$minut2, _datetimeObject$secon2, _datetimeObject$milli2;
-        var _dt2 = this.toDate();
-        _dt2.setFullYear(_dt2.getFullYear() - ((_datetimeObject$year2 = datetimeObject.year) !== null && _datetimeObject$year2 !== void 0 ? _datetimeObject$year2 : 0));
-        _dt2.setMonth(_dt2.getMonth() - ((_datetimeObject$month2 = datetimeObject.month) !== null && _datetimeObject$month2 !== void 0 ? _datetimeObject$month2 : 0));
-        _dt2.setDate(_dt2.getDate() - ((_datetimeObject$day2 = datetimeObject.day) !== null && _datetimeObject$day2 !== void 0 ? _datetimeObject$day2 : 0));
-        _dt2.setDate(_dt2.getDate() - 7 * ((_datetimeObject$week2 = datetimeObject.week) !== null && _datetimeObject$week2 !== void 0 ? _datetimeObject$week2 : 0));
-        _dt2.setHours(_dt2.getHours() - ((_datetimeObject$hour2 = datetimeObject.hour) !== null && _datetimeObject$hour2 !== void 0 ? _datetimeObject$hour2 : 0));
-        _dt2.setMinutes(_dt2.getMinutes() - ((_datetimeObject$minut2 = datetimeObject.minute) !== null && _datetimeObject$minut2 !== void 0 ? _datetimeObject$minut2 : 0));
-        _dt2.setSeconds(_dt2.getSeconds() - ((_datetimeObject$secon2 = datetimeObject.second) !== null && _datetimeObject$secon2 !== void 0 ? _datetimeObject$secon2 : 0));
-        _dt2.setMilliseconds(_dt2.getMilliseconds() - ((_datetimeObject$milli2 = datetimeObject.millisecond) !== null && _datetimeObject$milli2 !== void 0 ? _datetimeObject$milli2 : 0));
-        return new DateTime(_dt2, this.locale);
+        var _dt4 = this.toDate();
+        _dt4.setFullYear(_dt4.getFullYear() - ((_datetimeObject$year2 = datetimeObject.year) !== null && _datetimeObject$year2 !== void 0 ? _datetimeObject$year2 : 0));
+        _dt4.setMonth(_dt4.getMonth() - ((_datetimeObject$month2 = datetimeObject.month) !== null && _datetimeObject$month2 !== void 0 ? _datetimeObject$month2 : 0));
+        _dt4.setDate(_dt4.getDate() - ((_datetimeObject$day2 = datetimeObject.day) !== null && _datetimeObject$day2 !== void 0 ? _datetimeObject$day2 : 0));
+        _dt4.setDate(_dt4.getDate() - 7 * ((_datetimeObject$week2 = datetimeObject.week) !== null && _datetimeObject$week2 !== void 0 ? _datetimeObject$week2 : 0));
+        _dt4.setHours(_dt4.getHours() - ((_datetimeObject$hour2 = datetimeObject.hour) !== null && _datetimeObject$hour2 !== void 0 ? _datetimeObject$hour2 : 0));
+        _dt4.setMinutes(_dt4.getMinutes() - ((_datetimeObject$minut2 = datetimeObject.minute) !== null && _datetimeObject$minut2 !== void 0 ? _datetimeObject$minut2 : 0));
+        _dt4.setSeconds(_dt4.getSeconds() - ((_datetimeObject$secon2 = datetimeObject.second) !== null && _datetimeObject$secon2 !== void 0 ? _datetimeObject$secon2 : 0));
+        _dt4.setMilliseconds(_dt4.getMilliseconds() - ((_datetimeObject$milli2 = datetimeObject.millisecond) !== null && _datetimeObject$milli2 !== void 0 ? _datetimeObject$milli2 : 0));
+        return new DateTime(_dt4, this.locale);
       }
     }
   }, {
@@ -401,37 +511,36 @@ var DateTime = /*#__PURE__*/function () {
       if (datetimeObject instanceof DateTime) {
         this._source = datetimeObject.toDate();
       } else if (datetimeObject instanceof Date) {
-        var _datetimeObject$year3, _ref2, _datetimeObject$day3;
-        this._source.setFullYear((_datetimeObject$year3 = datetimeObject.year) !== null && _datetimeObject$year3 !== void 0 ? _datetimeObject$year3 : this._source.getFullYear());
-        this._source.setMonth((_ref2 = datetimeObject.month - 1) !== null && _ref2 !== void 0 ? _ref2 : this._source.getMonth());
-        this._source.setDate((_datetimeObject$day3 = datetimeObject.day) !== null && _datetimeObject$day3 !== void 0 ? _datetimeObject$day3 : this._source.getDate());
+        this.year = datetimeObject.year;
+        this.month = datetimeObject.month;
+        this.day = datetimeObject.day;
       } else if (datetimeObject instanceof Time) {
-        var _datetimeObject$hour3, _datetimeObject$minut3, _datetimeObject$secon3, _datetimeObject$milli3;
-        this._source.setHours((_datetimeObject$hour3 = datetimeObject.hour) !== null && _datetimeObject$hour3 !== void 0 ? _datetimeObject$hour3 : this._source.getHours());
-        this._source.setMinutes((_datetimeObject$minut3 = datetimeObject.minute) !== null && _datetimeObject$minut3 !== void 0 ? _datetimeObject$minut3 : this._source.getMinutes());
-        this._source.setSeconds((_datetimeObject$secon3 = datetimeObject.second) !== null && _datetimeObject$secon3 !== void 0 ? _datetimeObject$secon3 : this._source.getSeconds());
-        this._source.setMilliseconds((_datetimeObject$milli3 = datetimeObject.millisecond) !== null && _datetimeObject$milli3 !== void 0 ? _datetimeObject$milli3 : this._source.getMilliseconds());
+        this.hour = datetimeObject.hour;
+        this.minute = datetimeObject.minute;
+        this.second = datetimeObject.second;
+        this.millisecond = datetimeObject.millisecond;
       } else {
-        var _datetimeObject$year4, _ref3, _datetimeObject$day4, _datetimeObject$hour4, _datetimeObject$minut4, _datetimeObject$secon4, _datetimeObject$milli4;
-        this._source.setFullYear((_datetimeObject$year4 = datetimeObject.year) !== null && _datetimeObject$year4 !== void 0 ? _datetimeObject$year4 : this._source.getFullYear());
-        this._source.setMonth((_ref3 = datetimeObject.month - 1) !== null && _ref3 !== void 0 ? _ref3 : this._source.getMonth());
-        this._source.setDate((_datetimeObject$day4 = datetimeObject.day) !== null && _datetimeObject$day4 !== void 0 ? _datetimeObject$day4 : this._source.getDate());
-        this._source.setHours((_datetimeObject$hour4 = datetimeObject.hour) !== null && _datetimeObject$hour4 !== void 0 ? _datetimeObject$hour4 : this._source.getHours());
-        this._source.setMinutes((_datetimeObject$minut4 = datetimeObject.minute) !== null && _datetimeObject$minut4 !== void 0 ? _datetimeObject$minut4 : this._source.getMinutes());
-        this._source.setSeconds((_datetimeObject$secon4 = datetimeObject.second) !== null && _datetimeObject$secon4 !== void 0 ? _datetimeObject$secon4 : this._source.getSeconds());
-        this._source.setMilliseconds((_datetimeObject$milli4 = datetimeObject.millisecond) !== null && _datetimeObject$milli4 !== void 0 ? _datetimeObject$milli4 : this._source.getMilliseconds());
+        if (datetimeObject.year != null) this.year = datetimeObject.year;
+        if (datetimeObject.month != null) this.month = datetimeObject.month;
+        if (datetimeObject.day != null) this.day = datetimeObject.day;
+        if (datetimeObject.hour != null) this.hour = datetimeObject.hour;
+        if (datetimeObject.minute != null) this.minute = datetimeObject.minute;
+        if (datetimeObject.second != null) this.second = datetimeObject.second;
+        if (datetimeObject.millisecond != null) this.millisecond = datetimeObject.millisecond;
       }
     }
   }, {
     key: "eq",
     value: function eq(datetimeObject) {
+      var ignoreMillisecond = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var other = new DateTime(datetimeObject, this.locale);
-      return this.timestamp() === other.timestamp();
+      if (!ignoreMillisecond) return this.timestamp() === other.timestamp();else return this.year === other.year && this.month === other.month && this.day === other.day && this.hour === other.hour && this.minute === other.minute && this.second === other.second;
     }
   }, {
     key: "neq",
     value: function neq(datetimeObject) {
-      return !this.eq(datetimeObject);
+      var ignoreMillisecond = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      return !this.eq(datetimeObject, ignoreMillisecond);
     }
   }, {
     key: "ge",
@@ -545,6 +654,7 @@ var DateTime = /*#__PURE__*/function () {
        * 아래의 코드는 if (year == null) else if (month == null) ... else if (millisecond == null) 에 대해 각각 for 문으로
        * 전의 unit을 기준(standard)의 값으로, 후의 unit을 시작으로 지정하는 코드다.
        */
+      var find = false;
       for (var _i = 0, _units = units; _i < _units.length; _i++) {
         var unit = _units[_i];
         if (ret[unit] != null) {
@@ -557,11 +667,13 @@ var DateTime = /*#__PURE__*/function () {
             var _units$_i, _ret$_units$_i;
             (_ret$_units$_i = ret[_units$_i = units[_i2]]) !== null && _ret$_units$_i !== void 0 ? _ret$_units$_i : ret[_units$_i] = defaults[units[_i2]];
           }
+          find = true;
           break;
         }
       }
-      console.log(ret); // FIXME: debug
-
+      if (!find) {
+        return DateTime.now(); // `now` 변수가 이미 있긴 하지만 위의 연산이 밀리초 단위의 값에 오차를 주기에 충분하므로 다시 호출
+      }
       if (ret.year % 1 !== 0) {
         ret.month += ret.year % 1 * 12;
         ret.year = ret.year >= 0 ? Math.floor(ret.year) : Math.ceil(ret.year);
@@ -614,56 +726,51 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "set",
     value: function set(datetimeObject) {
-      var _datetimeObject$year5, _datetimeObject$month3, _datetimeObject$day5, _datetimeObject$hour5, _datetimeObject$minut5, _datetimeObject$secon5, _datetimeObject$milli5;
-      var year = (_datetimeObject$year5 = datetimeObject.year) !== null && _datetimeObject$year5 !== void 0 ? _datetimeObject$year5 : new $D().getFullYear();
+      var _datetimeObject$year3, _datetimeObject$month3, _datetimeObject$day3, _datetimeObject$hour3, _datetimeObject$minut3, _datetimeObject$secon3, _datetimeObject$milli3;
+      var year = (_datetimeObject$year3 = datetimeObject.year) !== null && _datetimeObject$year3 !== void 0 ? _datetimeObject$year3 : new $D().getFullYear();
       var month = (_datetimeObject$month3 = datetimeObject.month) !== null && _datetimeObject$month3 !== void 0 ? _datetimeObject$month3 : 1;
-      var day = (_datetimeObject$day5 = datetimeObject.day) !== null && _datetimeObject$day5 !== void 0 ? _datetimeObject$day5 : 1;
-      var hour = (_datetimeObject$hour5 = datetimeObject.hour) !== null && _datetimeObject$hour5 !== void 0 ? _datetimeObject$hour5 : 0;
-      var minute = (_datetimeObject$minut5 = datetimeObject.minute) !== null && _datetimeObject$minut5 !== void 0 ? _datetimeObject$minut5 : 0;
-      var second = (_datetimeObject$secon5 = datetimeObject.second) !== null && _datetimeObject$secon5 !== void 0 ? _datetimeObject$secon5 : 0;
-      var millisecond = (_datetimeObject$milli5 = datetimeObject.millisecond) !== null && _datetimeObject$milli5 !== void 0 ? _datetimeObject$milli5 : 0;
+      var day = (_datetimeObject$day3 = datetimeObject.day) !== null && _datetimeObject$day3 !== void 0 ? _datetimeObject$day3 : 1;
+      var hour = (_datetimeObject$hour3 = datetimeObject.hour) !== null && _datetimeObject$hour3 !== void 0 ? _datetimeObject$hour3 : 0;
+      var minute = (_datetimeObject$minut3 = datetimeObject.minute) !== null && _datetimeObject$minut3 !== void 0 ? _datetimeObject$minut3 : 0;
+      var second = (_datetimeObject$secon3 = datetimeObject.second) !== null && _datetimeObject$secon3 !== void 0 ? _datetimeObject$secon3 : 0;
+      var millisecond = (_datetimeObject$milli3 = datetimeObject.millisecond) !== null && _datetimeObject$milli3 !== void 0 ? _datetimeObject$milli3 : 0;
       return new DateTime(new $D(year, month - 1, day, hour, minute, second, millisecond));
     }
   }, {
     key: "parse",
     value: function parse(dateString) {
       var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ko-KR';
-      return DateTime.fromObject.apply(DateTime, _toConsumableArray(DateTime._parse(dateString, locale)));
+      return DateTime.parseWithFilteredString(dateString, locale)[0];
     }
   }, {
-    key: "_parse",
-    value: function _parse(dateString) {
-      var _parse2;
+    key: "parseWithFilteredString",
+    value: function parseWithFilteredString(dateString) {
       var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ko-KR';
-      // sanitize dateString
-      // '  2020년  3월  2일  ' -> '2020년 3월 2일'
-      dateString = dateString.trim().replace(/\s+/g, ' ');
       var cultureInfo = IS_DIST ? JSON.parse(FileStream.read("/sdcard/msgbot/global_modules/datetime/globalization/".concat(locale, ".json"))) : require("./globalization/".concat(locale, ".json"));
       if (!cultureInfo) throw new Error('Invalid locale, not found ' + locale);
-      var isNumberRegex = /^[+-]?\d+(?:\.\d*)?$/;
-      var isRelativeObject = function isRelativeObject(obj) {
-        return obj.constructor === Object && 'diff' in obj && typeof obj.diff === 'number' && Object.keys(obj).length === 1;
-      };
-      var isHomonymObject = function isHomonymObject(obj) {
-        return obj.constructor === Object && 'homonym' in obj && Array.isArray(obj.homonym) && Object.keys(obj).length === 1;
-      };
-      var keywords = {
-        units: new Set(['year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond']),
-        meridiems: new Set(['am', 'pm']),
-        weekdays: new Set(['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']),
-        times: new Set(['morning', 'noon', 'afternoon', 'evening', 'night', 'midnight']),
-        counts: new Set(['th', 'half', 'end']),
-        relative: new Set(['ago', 'after']),
-        standard: new Set(['from', 'of'])
-      };
-      var homonyms = new Set(Object.keys(cultureInfo.translate).map(function (k) {
-        return isHomonymObject(cultureInfo.translate[k]) ? k : null;
-      }).filter(function (e) {
-        return e !== null;
-      }));
+      var replaces = Object.entries(cultureInfo.replaces);
+      replaces.sort(function (a, b) {
+        return b[0].length - a[0].length;
+      }); // '내일모레'와 '모레'가 모두 매칭되는 경우, '내일모레'가 먼저 매칭되도록 함.
 
-      // 1. parse ISO 8601 format
-      var parse1 = function parse1() {
+      dateString = dateString.trim().replace(/\s+/g, ' ');
+      dateString = dateString.replace(/(그+)(글피|끄저께)/g, function (_, countStr, directionStr) {
+        var offset = directionStr === '글피' ? 3 : 2;
+        var direction = directionStr === '글피' ? '다음' : '저번';
+        var count = countStr.length;
+        return "".concat(direction[0].repeat(count + offset)).concat(direction[1], " \uB0A0");
+      });
+      dateString = dateString.replace(/(저+)번/g, function (_, countStr) {
+        return "".concat('지'.repeat(countStr.length), "\uB09C");
+      });
+      replaces.forEach(function (_ref2) {
+        var _ref3 = _slicedToArray(_ref2, 2),
+          key = _ref3[0],
+          value = _ref3[1];
+        dateString = dateString.replace(new RegExp(key, 'g'), value);
+      });
+      var filteredString = dateString;
+      var iso_parse = function iso_parse() {
         var RE_ISO = /*#__PURE__*/_wrapRegExp(/^(\d{4})\x2D(\d{2})\x2D(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{3}))?Z$/, {
           year: 1,
           month: 2,
@@ -675,6 +782,7 @@ var DateTime = /*#__PURE__*/function () {
         });
         var isoMatch = dateString.match(RE_ISO);
         if (isoMatch) {
+          filteredString = filteredString.replace(isoMatch[0], '');
           return {
             year: isoMatch.groups.year,
             month: isoMatch.groups.month,
@@ -686,380 +794,737 @@ var DateTime = /*#__PURE__*/function () {
           };
         }
       };
+      var common_parse = function common_parse() {
+        var _year, _month, _day2, _hour, _minute, _second, _millisecond;
+        var year, month, day, hour, minute, second, millisecond;
+        var mix = {
+          ymd: /*#__PURE__*/_wrapRegExp(/(\d{4})[-.\/] *(\d{1,2})[-.\/] *(\d{1,2})\.?/, {
+            year: 1,
+            month: 2,
+            day: 3
+          }),
+          md: /*#__PURE__*/_wrapRegExp(/(\d{1,2})[-.\/] *(\d{1,2})\.?/, {
+            month: 1,
+            day: 2
+          }),
+          hms: /*#__PURE__*/_wrapRegExp(/(\d{1,2}) *: *(\d{1,2}) *: *(\d{1,2})/, {
+            hour: 1,
+            minute: 2,
+            second: 3
+          }),
+          hm: /*#__PURE__*/_wrapRegExp(/(\d{1,2}) *: *(\d{1,2})/, {
+            hour: 1,
+            minute: 2
+          }),
+          ms: /*#__PURE__*/_wrapRegExp(/(\d{1,2}) *: *(\d{1,2})/, {
+            minute: 1,
+            second: 2
+          })
+        };
+        var matchedMix = {};
+        for (var key in mix) {
+          var match = dateString.match(mix[key]);
+          if (match) matchedMix[key] = match;
+        }
+        if (matchedMix.ymd) {
+          filteredString = filteredString.replace(matchedMix.ymd[0], '');
+          year = matchedMix.ymd.groups.year;
+          month = matchedMix.ymd.groups.month;
+          day = matchedMix.ymd.groups.day;
+        } else if (matchedMix.md) {
+          filteredString = filteredString.replace(matchedMix.md[0], '');
+          year = DateTime.now().year;
+          month = matchedMix.md.groups.month;
+          day = matchedMix.md.groups.day;
+        }
+        if (matchedMix.hms) {
+          filteredString = filteredString.replace(matchedMix.hms[0], '');
+          hour = matchedMix.hms.groups.hour;
+          minute = matchedMix.hms.groups.minute;
+          second = matchedMix.hms.groups.second;
+        } else if (matchedMix.hm) {
+          filteredString = filteredString.replace(matchedMix.hm[0], '');
+          hour = matchedMix.hm.groups.hour;
+          minute = matchedMix.hm.groups.minute;
+        } else if (matchedMix.ms) {
+          filteredString = filteredString.replace(matchedMix.ms[0], '');
+          minute = matchedMix.ms.groups.minute;
+          second = matchedMix.ms.groups.second;
+        }
+        var re = {
+          year: /\d{4}(?=년)/,
+          month: /\d{1,2}(?=월)/,
+          day: /\d{1,2}(?=일)/,
+          hour: /\d{1,2}(?=시)/,
+          minute: /\d{1,2}(?=분)/,
+          second: /\d{1,2}(?=초)/,
+          millisecond: /\d{1,3}(?=밀리초)/
+        };
+        var matched = {};
+        for (var _key in re) {
+          var _match = dateString.match(re[_key]);
+          if (_match) {
+            filteredString = filteredString.replace(_match[0], '');
+            matched[_key] = _match[0];
+          }
+        }
+        (_year = year) !== null && _year !== void 0 ? _year : year = matched.year;
+        (_month = month) !== null && _month !== void 0 ? _month : month = matched.month;
+        (_day2 = day) !== null && _day2 !== void 0 ? _day2 : day = matched.day;
+        (_hour = hour) !== null && _hour !== void 0 ? _hour : hour = matched.hour;
+        (_minute = minute) !== null && _minute !== void 0 ? _minute : minute = matched.minute;
+        (_second = second) !== null && _second !== void 0 ? _second : second = matched.second;
+        (_millisecond = millisecond) !== null && _millisecond !== void 0 ? _millisecond : millisecond = matched.millisecond;
+        if (year != null) year = parseInt(year);
+        if (month != null) month = parseInt(month);
+        if (day != null) day = parseInt(day);
+        if (hour != null) hour = parseInt(hour);
+        if (minute != null) minute = parseInt(minute);
+        if (second != null) second = parseInt(second);
+        if (millisecond != null) millisecond = parseInt(millisecond);
 
-      // 2. parse common date format
-      var parse2 = function parse2() {
-        var meridiem = 'pm';
-        for (var key in cultureInfo.translate) {
-          if (keywords.meridiems.has(cultureInfo.translate[key]))
-            // am, pm이 value인 key들
-            meridiem = cultureInfo.translate[key];
+        // 보통 '3시'는 '오후 3시'로 해석되어야 함.
+        // 자동으로 오후로 해석되는 시간의 범위: 1시 ~ 9시
+        var meridian = 1 <= hour && hour <= 9 ? 'pm' : 'am';
+        if (dateString.indexOf('오전') !== -1 || dateString.indexOf('am') !== -1) meridian = 'am';else if (dateString.indexOf('오후') !== -1 || dateString.indexOf('pm') !== -1) meridian = 'pm';
+        if (hour !== undefined && hour < 12 && meridian === 'pm') hour += 12;
+        var now = DateTime.now();
+        if (dateString.indexOf('아침') !== -1) {
+          day = now.gt({
+            hour: 7,
+            minute: 30
+          }) ? now.day + 1 : now.day;
+          hour = 7;
+          minute = 30;
+        } else if (dateString.indexOf('정오') !== -1) {
+          day = now.gt({
+            hour: 12
+          }) ? now.day + 1 : now.day;
+          hour = 12;
+        } else if (dateString.indexOf('점심') !== -1) {
+          day = now.gt({
+            hour: 12,
+            minute: 30
+          }) ? now.day + 1 : now.day;
+          hour = 12;
+          minute = 30;
+        } else if (dateString.indexOf('저녁') !== -1) {
+          day = now.gt({
+            hour: 18
+          }) ? now.day + 1 : now.day;
+          hour = 18;
+        } else if (dateString.indexOf('자정') !== -1) {
+          day = now.day + 1;
+          hour = 0;
         }
-        var RE_DATE = /*#__PURE__*/_wrapRegExp(/(?:(\d{4})[-.\/])? *(\d{1,2})[-.\/] *(\d{1,2})\.?/, {
-          year: 1,
-          month: 2,
-          day: 3
-        });
-        var RE_TIME = /*#__PURE__*/_wrapRegExp(/(\d{1,2}):(\d{1,2})(?::(\d{1,2})(?:\.(\d{1,3}))?)?/, {
-          hour: 1,
-          minute: 2,
-          second: 3,
-          millisecond: 4
-        });
-        var dateMatch = dateString.match(RE_DATE);
-        var timeMatch = dateString.match(RE_TIME);
-        if (dateMatch || timeMatch) {
-          var _dateMatch$groups, _dateMatch$groups2, _dateMatch$groups3, _timeMatch$groups, _timeMatch$groups2, _timeMatch$groups3, _timeMatch$groups4;
-          var year = dateMatch === null || dateMatch === void 0 || (_dateMatch$groups = dateMatch.groups) === null || _dateMatch$groups === void 0 ? void 0 : _dateMatch$groups.year;
-          var month = dateMatch === null || dateMatch === void 0 || (_dateMatch$groups2 = dateMatch.groups) === null || _dateMatch$groups2 === void 0 ? void 0 : _dateMatch$groups2.month;
-          var day = dateMatch === null || dateMatch === void 0 || (_dateMatch$groups3 = dateMatch.groups) === null || _dateMatch$groups3 === void 0 ? void 0 : _dateMatch$groups3.day;
-          var hour = timeMatch === null || timeMatch === void 0 || (_timeMatch$groups = timeMatch.groups) === null || _timeMatch$groups === void 0 ? void 0 : _timeMatch$groups.hour;
-          var minute = timeMatch === null || timeMatch === void 0 || (_timeMatch$groups2 = timeMatch.groups) === null || _timeMatch$groups2 === void 0 ? void 0 : _timeMatch$groups2.minute;
-          var second = timeMatch === null || timeMatch === void 0 || (_timeMatch$groups3 = timeMatch.groups) === null || _timeMatch$groups3 === void 0 ? void 0 : _timeMatch$groups3.second;
-          var millisecond = timeMatch === null || timeMatch === void 0 || (_timeMatch$groups4 = timeMatch.groups) === null || _timeMatch$groups4 === void 0 ? void 0 : _timeMatch$groups4.millisecond;
-          if (hour !== undefined && hour < 12 && meridiem === 'pm') hour += 12;
-          return {
-            year: year,
-            month: month,
-            day: day,
-            hour: hour,
-            minute: minute,
-            second: second,
-            millisecond: millisecond
-          };
-        }
+        var ret = {};
+        if (year !== undefined) ret.year = year;
+        if (month !== undefined) ret.month = month;
+        if (day !== undefined) ret.day = day;
+        if (hour !== undefined) ret.hour = hour;
+        if (minute !== undefined) ret.minute = minute;
+        if (second !== undefined) ret.second = second;
+        if (millisecond !== undefined) ret.millisecond = millisecond;
+        return ret;
       };
-
-      // 3. analyze in tokens
-      var parse3 = function parse3() {
-        var standard = {};
-
-        // sort by length (desc), then by dictionary order (asc)
-        // desc로 정렬하기 때문에, '매주' 와 '주' 에서 '매주'에 먼저 매칭될 수 있게 함.
-        var keys = Object.keys(cultureInfo.translate);
-        keys.sort(function (a, b) {
-          return a.length !== b.length ? b.length - a.length : a.localeCompare(b);
+      var relative_parse = function relative_parse() {
+        var unitMap = {
+          '년': 'year',
+          '해': 'year',
+          '달': 'month',
+          '일': 'day',
+          '날': 'day',
+          '시간': 'hour',
+          '분': 'minute',
+          '초': 'second'
+        };
+        var units = ['year', 'month', 'day', 'hour', 'minute', 'second'];
+        var RE_RELATIVE = /*#__PURE__*/_wrapRegExp(/([+-]?\d+(?:.\d*)?) *(\uB144|\uB2EC|\uC8FC|\uC77C|\uC2DC\uAC04|\uBD84|\uCD08)/g, {
+          diff: 1,
+          unit: 2
         });
-
-        // tokenize dateString
-        // '2020년 3월 2일 12시 34분 56초' -> [2020, 'year', 3, 'month', 2, 'day', 12, 'hour', 34, 'minute', 56, 'second']
-        var getTokens = function getTokens(dstr) {
-          var startIdx = 0;
-          var chucks = [];
-          var found = false;
-          var foundBefore = false;
-          while (startIdx < dstr.length) {
-            foundBefore = found;
-            found = false;
-            for (var _i3 = 0, _keys = keys; _i3 < _keys.length; _i3++) {
-              var key = _keys[_i3];
-              if (dstr.startsWith(key, startIdx)) {
-                var value = cultureInfo.translate[key];
-                if (chucks.length >= 1 && typeof chucks[chucks.length - 1] === 'number' && typeof value === 'number') {
-                  // 십이 -> [10, 2] -> 10+2
-                  // 이십 -> [2, 10] -> 2*10
-                  if (chucks[chucks.length - 1] > value) chucks[chucks.length - 1] += value;else chucks[chucks.length - 1] *= value;
-                } else if (chucks.length >= 1 && isRelativeObject(chucks[chucks.length - 1]) && isRelativeObject(value)) {
-                  // 다음 내일 -> [{diff: 1}, {diff: 2}] -> {diff: 1+2}
-                  // 내일 다음 -> [{diff: 2}, {diff: 1}] -> {diff: 2+1}
-
-                  chucks[chucks.length - 1].diff += value.diff;
-                } else if (Array.isArray(value)) chucks.push.apply(chucks, _toConsumableArray(value));else chucks.push(value);
-                startIdx += key.length;
-                found = true;
-                break;
-              }
-            }
-            if (!found) {
-              if (chucks.length === 0) chucks.push('');
-              if (foundBefore) chucks.push(dstr[startIdx++]);else chucks[chucks.length - 1] += dstr[startIdx++];
-            }
-          }
-          return chucks.map(function (e) {
-            return isNumberRegex.test(e) ? parseFloat(e) : e;
-          });
+        var RE_RELATIVE_END = /*#__PURE__*/_wrapRegExp(/[^오]+([전후])/, {
+          direction: 1
+        });
+        var RE_RELATIVE2 = /*#__PURE__*/_wrapRegExp(/(\uB2E4+\uC74C|\uC9C0+\uB09C|\uC774\uBC88) *(\uD574|\uB2EC|\uC8FC|\uB0A0|\uC2DC\uAC04|\uBD84|\uCD08)/g, {
+          diff: 1,
+          unit: 2
+        });
+        var RE_WEEKDAY = /*#__PURE__*/_wrapRegExp(/([일월화수목금토])(?:\uC694\uC77C)?(?= +|$)/, {
+          week: 1
+        });
+        var ret = {};
+        var arr, arr2;
+        var now = DateTime.now();
+        var set = function set(dir, diff) {
+          var factor = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
+          return dir === '전' ? -parseInt(diff) * factor : parseInt(diff) * factor;
         };
-        var splited = dateString.split(' ').map(getTokens).flat();
-        var tokens = [];
 
-        /**
-         * 공백이 없는 문자열에서의 토큰들끼리는 잘 merge 되었으나, 공백이 없는 문자열들끼리의 토큰들끼리의 merge를 처리해야함.
-         * ex. 다음 다음다음 날 -> [다음, 다음다음, 날] -> [{diff: 1}, {diff: 2}, 'day'] -> [{diff: 1+2}, 'day']
-         * 위의 예시에서 1+2를 하는 작업을 아래 코드에서 수행함.
-         */
-        while (splited.length > 0) {
-          var value = splited.shift();
-          if (tokens.length >= 1 && typeof tokens[tokens.length - 1] === 'number' && typeof value === 'number') {
-            if (tokens[tokens.length - 1] > value) tokens[tokens.length - 1] += value;else tokens[tokens.length - 1] *= value;
-          } else if (tokens.length >= 1 && isRelativeObject(tokens[tokens.length - 1]) && isRelativeObject(value)) {
-            tokens[tokens.length - 1].diff += value.diff;
-          } else if (Array.isArray(value)) tokens.push.apply(tokens, _toConsumableArray(value));else tokens.push(value);
-        }
-        console.log(tokens); // FIXME: debug
+        // 'n<단위> 후'는 단위가 변경되고 나머지는 현재 시간을 따름. 3시간 후 -> 3시간 후 현재시간
+        arr2 = RE_RELATIVE_END.exec(dateString);
+        if (arr2 !== null) {
+          filteredString = filteredString.replace(arr2[0], '');
+          while ((arr = RE_RELATIVE.exec(dateString)) !== null) {
+            var _ret$key;
+            filteredString = filteredString.replace(arr[0], '');
+            var key = unitMap[arr.groups.unit];
+            if (arr.groups.unit === '주') {
+              var _ret$day;
+              ret['day'] = ((_ret$day = ret['day']) !== null && _ret$day !== void 0 ? _ret$day : 0) + set(arr2.groups.direction, arr.groups.diff, 7);
+              // '다음 주' -> '다음 주 월요일'로 자동매칭은 부드러우나, '3주 후'는 '3주 후 현재시간'으로 자동매칭이 더 합당함.
+            } else ret[key] = ((_ret$key = ret[key]) !== null && _ret$key !== void 0 ? _ret$key : 0) + set(arr2.groups.direction, arr.groups.diff);
 
-        // 세 시간 반 -> 3.5시간
-        for (var _i4 = 2; _i4 < tokens.length; _i4++) {
-          if (keywords.units.has(tokens[_i4 - 1]) && keywords.counts.has(tokens[_i4]) && tokens[_i4] === 'half' && typeof tokens[_i4 - 2] === 'number') {
-            tokens[_i4 - 2] += 0.5;
-            tokens.splice(_i4, 1);
-            _i4--;
+            // '3시간 후' -> '3시간 후 현재시간'으로 자동매칭. '3일 후' -> '3일 후 현재시간' 으로 자동매칭...
+            ret.defaultToNow = true;
           }
         }
 
-        // [3.5, '시간', '뒤'] -> [{ diff: 3.5 }, '시간']
-        var i = 0;
-        while (i < tokens.length) {
-          if (keywords.relative.has(tokens[i])) {
-            if (!standard) standard = DateTime.now();
-            var multiplier = tokens[i] === 'ago' ? -1 : 1;
-            for (var j = i - 1; j >= 0; j--) {
-              if (keywords.standard.has(tokens[j])) break;
-              var diff = void 0;
-              if (typeof tokens[j] === 'number') diff = tokens[j] * multiplier;else if (isRelativeObject(tokens[j])) diff = tokens[j].diff * multiplier;
-              if (diff !== undefined) tokens[j] = {
-                diff: diff
-              };
-            }
-            tokens.splice(i, 1);
-            i = -1;
-          }
-          i++;
+        // '다음 <단위>'는 단위만 변경되면 나머지는 초기화임. 다음 시간 -> 다음 시간 0분 0초
+        while ((arr = RE_RELATIVE2.exec(dateString)) !== null) {
+          var _ret$unitMap$arr$grou;
+          filteredString = filteredString.replace(arr[0], '');
+
+          // 다다다다음 -> 다음 * 4
+          var diff_num = (arr.groups.diff.length - 1) * (arr.groups.diff[0] === '다' ? 1 : arr.groups.diff[0] === '지' ? -1 : 0);
+          if (arr.groups.unit === '주') {
+            var _ret$day2;
+            ret['day'] = ((_ret$day2 = ret['day']) !== null && _ret$day2 !== void 0 ? _ret$day2 : 0) + diff_num * 7;
+            ret['day'] += 0 - (now.weekday - 1); // '다음 주' -> '다음 주 월요일'로 자동매칭
+          } else ret[unitMap[arr.groups.unit]] = ((_ret$unitMap$arr$grou = ret[unitMap[arr.groups.unit]]) !== null && _ret$unitMap$arr$grou !== void 0 ? _ret$unitMap$arr$grou : 0) + diff_num;
         }
 
-        // [2022, 'year', 3, 'month', 2, 'day', 12, 'hour', 34, 'minute', 56, 'second']
-        var absoluteParse = function absoluteParse() {
-          var dateObject = {};
-          var meridiem = 'pm';
-          for (var _i5 = 0; _i5 < tokens.length; _i5++) {
-            var token = tokens[_i5];
-            if (keywords.units.has(token)) {
-              // year, month, week, day, hour, minute, second, millisecond 감지
-              if (cultureInfo['isTurnReversed'] === false) {
-                // 한국어처럼 '2022년' 과 같이 뒤에 단위가 붙는 경우
-                if (typeof tokens[_i5 - 1] === 'number') {
-                  dateObject[token] = tokens[_i5 - 1];
-                }
-                // else
-                // 	throw new Error(`invalid format: { dateObject[${token}]: ${tokens[i - 1]} }`);
-              } else {
-                // 영어처럼 'year 2022' 와 같이 앞에 단위가 붙는 경우
-                if (typeof tokens[_i5 + 1] === 'number') dateObject[token] = tokens[_i5 + 1];
-                // else
-                // 	throw new Error(`invalid format: { dateObject[${token}]: ${tokens[i + 1]} }`);
-              }
-            } else if (keywords.meridiems.has(token)) {
-              meridiem = token;
-            } else if ('hour' in dateObject) {
-              if (keywords.meridiems.has(token))
-                // am, pm
-                meridiem = token;
-              if (dateObject['hour'] < 12 && meridiem === 'pm') dateObject['hour'] += 12;
-            }
+        // 일월화수목금토가 일주일이라고 하면 현재가 수요일일 때, 다음주 일요일은 5일 후. 그러나 평상시는 이 날을 그냥 이번주 일요일이라고 함.
+        // 즉 현실에 맞게 일주일을 조금 다르게 대응시킴.
+        if ((arr = RE_WEEKDAY.exec(dateString)) !== null) {
+          if (arr.index === 0 || /[^0-9요]+/.test(dateString.slice(0, arr.index))) {
+            var _ret$day3, _ret$day4;
+            // /(?<=[^0-9요]+|^)(?<week>[일월화수목금토])(?:요일)?(?= +|$)/ 에서 후방탐색연산자 사용이 안되어서 이렇게 대신함
+
+            filteredString = filteredString.replace(arr[0], '');
+            var today = now.weekday - 1; // 일월화수목금토가 아니고 월화수목금토일
+            var start = (((_ret$day3 = ret['day']) !== null && _ret$day3 !== void 0 ? _ret$day3 : 0) + today) % 7;
+            var dest = DateTime.getWeekDayFromName(arr.groups.week, true);
+            ret['day'] = ((_ret$day4 = ret['day']) !== null && _ret$day4 !== void 0 ? _ret$day4 : 0) + (dest - start);
           }
-          return dateObject;
-        };
-
-        // [3, 'year', 'ago']
-        var relativeParse = function relativeParse() {
-          var dateObject = {};
-          var standard_now = DateTime.now();
-          var _loop = function _loop() {
-            var token = tokens[_i6];
-            if (keywords.standard.has(token)) {
-              // 3월 3일로부터
-              standard = DateTime._parse(tokens.slice(0, _i6).join(' '), locale)[0];
-              standard_now = DateTime.fromObject(standard);
-            } else if (keywords.counts.has(token)) {
-              var _ref4, _tokens$_ref;
-              // [half] week, [end] month, 11 [th] month, 11 [th] sunday, ...
-              (_tokens$_ref = tokens[_ref4 = _i6 + 1]) !== null && _tokens$_ref !== void 0 ? _tokens$_ref : tokens[_ref4] = 'millisecond'; // 2023년의 마지막 -> 2023년 12월 31일 23시 59분 59초 999밀리초
-
-              if (keywords.units.has(tokens[_i6 + 1]) || keywords.weekdays.has(tokens[_i6 + 1])) {
-                var tokenFront = tokens[_i6 - 1]; // 11, 3, 1, ...
-                // token;  // th, half, end
-                var tokenBack = tokens[_i6 + 1]; // month, week, day, sunday, ...
-
-                var amount;
-                if (token === 'half') amount = function amount(length) {
-                  return Math.floor(length / 2);
-                };else if (token === 'th') {
-                  if (typeof tokenFront !== 'number') throw new Error("invalid format: \"".concat(tokenFront, " th\""));
-                  amount = function amount(length) {
-                    return Math.min(tokenFront, length);
-                  };
-                } else if (token === 'end') amount = function amount(length) {
-                  return length;
-                };
-                switch (tokenBack) {
-                  case 'year':
-                    {
-                      var _dateObject$year2;
-                      if (token === 'half') dateObject['day'] = amount(DateTime.lengthOfYear((_dateObject$year2 = dateObject['year']) !== null && _dateObject$year2 !== void 0 ? _dateObject$year2 : standard_now.year));else throw new Error('invalid format: "th/end 해"');
-                      dateObject['hour'] = 0;
-                      dateObject['minute'] = 0;
-                      dateObject['second'] = 0;
-                      dateObject['millisecond'] = 0;
-                      break;
-                    }
-                  case 'month':
-                    {
-                      if (token === 'half') {
-                        var _dateObject$year3, _dateObject$month;
-                        dateObject['day'] = amount(DateTime.lengthOfMonth((_dateObject$year3 = dateObject['year']) !== null && _dateObject$year3 !== void 0 ? _dateObject$year3 : standard_now.year, (_dateObject$month = dateObject['month']) !== null && _dateObject$month !== void 0 ? _dateObject$month : standard_now.month));
-                        dateObject['hour'] = 0;
-                        dateObject['minute'] = 0;
-                        dateObject['second'] = 0;
-                        dateObject['millisecond'] = 0;
-                      } else {
-                        dateObject['month'] = amount(12);
-                        dateObject['day'] = 1;
-                        dateObject['hour'] = 0;
-                        dateObject['minute'] = 0;
-                        dateObject['second'] = 0;
-                        dateObject['millisecond'] = 0;
-                      }
-                      break;
-                    }
-                  case 'week':
-                    {
-                      if (token === 'half') {
-                        dateObject['day'] = standard_now.day + (amount(7) - standard_now.weekday + 7) % 7;
-                        dateObject['hour'] = 0;
-                        dateObject['minute'] = 0;
-                        dateObject['second'] = 0;
-                        dateObject['millisecond'] = 0;
-                      } else {
-                        var _dateObject$year4, _dateObject$month2;
-                        dateObject['day'] = standard_now.day + (0 - dateObject['weekday'] + 7) % 7;
-                        var lengthOfMonth = DateTime.lengthOfMonth((_dateObject$year4 = dateObject['year']) !== null && _dateObject$year4 !== void 0 ? _dateObject$year4 : standard_now.year, (_dateObject$month2 = dateObject['month']) !== null && _dateObject$month2 !== void 0 ? _dateObject$month2 : standard_now.month);
-
-                        // 만약 23일이 일요일이라면 16, 9, 2일이 셋째주, 둘째주, 셋째주가 됨
-                        // 23 % 7 == 2 이므로 2일이 첫주의 시작이 되어야 함
-                        // 이 달의 길이가 31일이라면 (31 - 2) // 7 == 4 이므로 4주차가 됨 (2, 9, 16, 23, 30)
-                        var first = dateObject['day'] % 7;
-                        var weeks = [first];
-                        for (var _i7 = first + 7; _i7 <= lengthOfMonth; _i7 += 7) weeks.push(_i7);
-                        dateObject['day'] = weeks[amount(weeks.length)];
-                        dateObject['hour'] = 0;
-                        dateObject['minute'] = 0;
-                        dateObject['second'] = 0;
-                        dateObject['millisecond'] = 0;
-                      }
-                      break;
-                    }
-                  case 'day':
-                    {
-                      if (token === 'half') {
-                        dateObject['hour'] = amount(24);
-                        dateObject['minute'] = 0;
-                        dateObject['second'] = 0;
-                        dateObject['millisecond'] = 0;
-                      }
-                      // else if (token === 'end') {
-                      //
-                      // }
-                      else {
-                        var _dateObject$year5, _dateObject$month3;
-                        // th
-                        dateObject['day'] = amount(DateTime.lengthOfMonth((_dateObject$year5 = dateObject['year']) !== null && _dateObject$year5 !== void 0 ? _dateObject$year5 : standard_now.year, (_dateObject$month3 = dateObject['month']) !== null && _dateObject$month3 !== void 0 ? _dateObject$month3 : standard_now.month));
-                        dateObject['hour'] = 0;
-                        dateObject['minute'] = 0;
-                        dateObject['second'] = 0;
-                        dateObject['millisecond'] = 0;
-                      }
-                      break;
-                    }
-                  case 'hour':
-                    {
-                      if (token === 'half') {
-                        dateObject['minute'] = amount(60);
-                        dateObject['second'] = 0;
-                        dateObject['millisecond'] = 0;
-                      } else {
-                        dateObject['hour'] = amount(24);
-                        dateObject['minute'] = 0;
-                        dateObject['second'] = 0;
-                        dateObject['millisecond'] = 0;
-                      }
-                      break;
-                    }
-                  case 'minute':
-                    {
-                      if (token === 'half') {
-                        dateObject['second'] = amount(60);
-                        dateObject['millisecond'] = 0;
-                      } else {
-                        dateObject['minute'] = amount(60);
-                        dateObject['second'] = 0;
-                        dateObject['millisecond'] = 0;
-                      }
-                      break;
-                    }
-                  case 'second':
-                    {
-                      if (token === 'half') {
-                        dateObject['millisecond'] = amount(1000);
-                      } else {
-                        dateObject['second'] = amount(60);
-                        dateObject['millisecond'] = 0;
-                      }
-                      break;
-                    }
-                  case 'millisecond':
-                    {
-                      if (token === 'half') throw new Error('invalid format: "half 밀리초"');else dateObject['millisecond'] = amount(1000);
-                      break;
-                    }
-                  default:
-                    {
-                      // weekday
-                      if (token === 'half') throw new Error('invalid format: "half 요일"');else {
-                        var _dateObject$year6, _dateObject$month4;
-                        dateObject['day'] = standard_now.day + (DateTime.getWeekDayFromName(tokenBack, locale = 'en-US') - standard_now.weekday + 7) % 7;
-                        var _lengthOfMonth = DateTime.lengthOfMonth((_dateObject$year6 = dateObject['year']) !== null && _dateObject$year6 !== void 0 ? _dateObject$year6 : standard_now.year, (_dateObject$month4 = dateObject['month']) !== null && _dateObject$month4 !== void 0 ? _dateObject$month4 : standard_now.month);
-                        var _first = dateObject['day'] % 7;
-                        var _weeks = [_first];
-                        for (var _i8 = _first + 7; _i8 <= _lengthOfMonth; _i8 += 7) _weeks.push(_i8);
-                        dateObject['day'] = _weeks[amount(_weeks.length)];
-                        dateObject['hour'] = 0;
-                        dateObject['minute'] = 0;
-                        dateObject['second'] = 0;
-                        dateObject['millisecond'] = 0;
-                      }
-                    }
-                }
-              }
-            } else if (keywords.times.has(token)) {
-              dateObject['minute'] = 0;
-              dateObject['second'] = 0;
-              dateObject['millisecond'] = 0;
-              if (token === 'morning') dateObject['hour'] = 9;else if (token === 'noon') dateObject['hour'] = 12;else if (token === 'afternoon') dateObject['hour'] = 15;else if (token === 'evening') dateObject['hour'] = 18;else if (token === 'night') dateObject['hour'] = 21;else if (token === 'midnight') {
-                var _dateObject$day2;
-                dateObject['hour'] = 0;
-                dateObject['day'] = (_dateObject$day2 = dateObject['day']) !== null && _dateObject$day2 !== void 0 ? _dateObject$day2 : standard_now.day + 1;
-              }
-            } else if (isRelativeObject(token)) {
-              if (keywords.units.has(tokens[_i6 + 1])) {
-                dateObject[tokens[_i6 + 1]] = standard_now[tokens[_i6 + 1]] + token.diff;
-              }
-            }
-          };
-          for (var _i6 = 0; _i6 < tokens.length; _i6++) {
-            _loop();
-          }
-          return dateObject;
-        };
-        var absolute = absoluteParse();
-        var relative = relativeParse();
-        var result = Object.assign(absolute, relative);
-        if (Object.keys(result).length > 0) return [result, standard];
+        }
+        return ret;
       };
-      var parsed = (_parse2 = parse1()) !== null && _parse2 !== void 0 ? _parse2 : parse2();
-      if (parsed !== undefined) return [parsed, undefined];else {
-        var _parsed = parse3();
-        if (_parsed !== undefined) return _parsed;else throw new Error('Invalid date string: ' + dateString);
+      var iso_parsed = iso_parse();
+      if (iso_parsed !== undefined) return [DateTime.fromObject(iso_parsed), filteredString.trim()];
+      var common_parsed = common_parse();
+      var relative_parsed = relative_parse();
+
+      // console.log(common_parsed, relative_parsed);    // FIXME: debug
+
+      var units = ['year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond'];
+
+      // '3월 4일' 이라고 하면 '현재년도 3월 4일 0시 0분 0초'로 해석되어야 함. 즉, 마지막으로 데이터가 존재하는 unit 까지만 현재 날짜로 지정.
+      var lastIndex = -1;
+      for (var i = units.length - 1; i >= 0; i--) {
+        if (relative_parsed[units[i]] !== undefined) {
+          lastIndex = i;
+          break;
+        }
       }
+
+      // 상대 날짜는 현재 날짜와 더해줌
+      var now = DateTime.now();
+      for (var _i3 = 0; _i3 < units.length; _i3++) {
+        var _relative_parsed$unit;
+        if (!relative_parsed.defaultToNow && _i3 > lastIndex) break;
+        relative_parsed[units[_i3]] = ((_relative_parsed$unit = relative_parsed[units[_i3]]) !== null && _relative_parsed$unit !== void 0 ? _relative_parsed$unit : 0) + now[units[_i3]];
+      }
+
+      // 상대 날짜와 일반 날짜를 합쳐서 전체 parse 결과를 도출
+      var parsed = {};
+      for (var _i4 = 0, _units2 = units; _i4 < _units2.length; _i4++) {
+        var _common_parsed$unit;
+        var unit = _units2[_i4];
+        if (common_parsed[unit] && relative_parsed[unit]) parsed[unit] = relative_parsed[unit]; // 둘 다 있으면 relative_parsed 를 우선시
+        else if (common_parsed[unit] || relative_parsed[unit]) parsed[unit] = (_common_parsed$unit = common_parsed[unit]) !== null && _common_parsed$unit !== void 0 ? _common_parsed$unit : relative_parsed[unit];
+      }
+      return [DateTime.fromObject(parsed), filteredString.trim()];
     }
+
+    // static parse(dateString, locale = 'ko-KR') {
+    // 	return DateTime.fromObject(...DateTime._parse(dateString, locale));
+    // }
+    //
+    // static _parse(dateString, locale = 'ko-KR') {
+    // 	// sanitize dateString
+    // 	// '  2020년  3월  2일  ' -> '2020년 3월 2일'
+    // 	dateString = dateString.trim().replace(/\s+/g, ' ');
+    //
+    // 	const cultureInfo = IS_DIST
+    // 		? JSON.parse(FileStream.read(`/sdcard/msgbot/global_modules/datetime/globalization/${locale}.json`))
+    // 		: require(`./globalization/${locale}.json`);
+    //
+    // 	if (!cultureInfo)
+    // 		throw new Error('Invalid locale, not found ' + locale);
+    //
+    // 	const isNumberRegex = /^[+-]?\d+(?:\.\d*)?$/;
+    // 	const isRelativeObject = obj => obj.constructor === Object && 'diff' in obj && typeof obj.diff === 'number' && Object.keys(obj).length === 1;
+    // 	const isHomonymObject = obj => obj.constructor === Object && 'homonym' in obj && Array.isArray(obj.homonym) && Object.keys(obj).length === 1;
+    //
+    // 	const keywords = {
+    // 		units: new Set([ 'year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond' ]),
+    // 		meridian: new Set([ 'am', 'pm' ]),
+    // 		weekdays: new Set([ 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday' ]),
+    // 		times: new Set([ 'morning', 'noon', 'afternoon', 'evening', 'night', 'midnight' ]),
+    // 		counts: new Set([ 'th', 'half', 'end' ]),
+    // 		relative: new Set([ 'ago', 'after' ]),
+    // 		standard: new Set([ 'from', 'of' ]),
+    // 	};
+    //
+    // 	const homonyms = new Set(Object.keys(cultureInfo.translate).map(k => isHomonymObject(cultureInfo.translate[k]) ? k : null).filter(e => e !== null));
+    //
+    // 	// 1. parse ISO 8601 format
+    // 	const parse1 = () => {
+    // 		const RE_ISO = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})(?:\.(?<millisecond>\d{3}))?Z$/;
+    // 		const isoMatch = dateString.match(RE_ISO);
+    //
+    // 		if (isoMatch) {
+    // 			return {
+    // 				year: isoMatch.groups.year,
+    // 				month: isoMatch.groups.month,
+    // 				day: isoMatch.groups.day,
+    // 				hour: isoMatch.groups.hour,
+    // 				minute: isoMatch.groups.minute,
+    // 				second: isoMatch.groups.second,
+    // 				millisecond: isoMatch.groups.millisecond
+    // 			};
+    // 		}
+    // 	};
+    //
+    // 	// 2. parse common date format
+    // 	const parse2 = () => {
+    // 		let meridiem = 'pm';
+    //
+    // 		for (let key in cultureInfo.translate) {
+    // 			if (keywords.meridiems.has(cultureInfo.translate[key])) // am, pm이 value인 key들
+    // 				meridiem = cultureInfo.translate[key];
+    // 		}
+    //
+    // 		const RE_DATE = /(?:(?<year>\d{4})[-.\/])? *(?<month>\d{1,2})[-.\/] *(?<day>\d{1,2})\.?/;
+    // 		const RE_TIME = /(?<hour>\d{1,2}):(?<minute>\d{1,2})(?::(?<second>\d{1,2})(?:\.(?<millisecond>\d{1,3}))?)?/;
+    //
+    // 		const dateMatch = dateString.match(RE_DATE);
+    // 		const timeMatch = dateString.match(RE_TIME);
+    //
+    // 		if (dateMatch || timeMatch) {
+    // 			let year = dateMatch?.groups?.year;
+    // 			let month = dateMatch?.groups?.month;
+    // 			let day = dateMatch?.groups?.day;
+    // 			let hour = timeMatch?.groups?.hour;
+    // 			let minute = timeMatch?.groups?.minute;
+    // 			let second = timeMatch?.groups?.second;
+    // 			let millisecond = timeMatch?.groups?.millisecond;
+    //
+    // 			if (hour !== undefined && hour < 12 && meridiem === 'pm')
+    // 				hour += 12;
+    //
+    // 			return { year, month, day, hour, minute, second, millisecond };
+    // 		}
+    // 	};
+    //
+    // 	// 3. analyze in tokens
+    // 	const parse3 = () => {
+    // 		let standard = {};
+    //
+    // 		// sort by length (desc), then by dictionary order (asc)
+    // 		// desc로 정렬하기 때문에, '매주' 와 '주' 에서 '매주'에 먼저 매칭될 수 있게 함.
+    // 		const keys = Object.keys(cultureInfo.translate);
+    // 		keys.sort((a, b) => a.length !== b.length ? b.length - a.length : a.localeCompare(b));
+    //
+    // 		// tokenize dateString
+    // 		// '2020년 3월 2일 12시 34분 56초' -> [2020, 'year', 3, 'month', 2, 'day', 12, 'hour', 34, 'minute', 56, 'second']
+    // 		const getTokens = dstr => {
+    // 			let startIdx = 0;
+    // 			let chucks = [];
+    // 			let found = false;
+    // 			let foundBefore = false;
+    //
+    // 			while (startIdx < dstr.length) {
+    // 				foundBefore = found;
+    // 				found = false;
+    //
+    // 				for (let key of keys) {
+    // 					if (dstr.startsWith(key, startIdx)) {
+    // 						let value = cultureInfo.translate[key];
+    //
+    // 						if (chucks.length >= 1 && typeof chucks[chucks.length - 1] === 'number' && typeof value === 'number') {
+    // 							// 십이 -> [10, 2] -> 10+2
+    // 							// 이십 -> [2, 10] -> 2*10
+    // 							if (chucks[chucks.length - 1] > value)
+    // 								chucks[chucks.length - 1] += value;
+    // 							else
+    // 								chucks[chucks.length - 1] *= value;
+    // 						}
+    // 						else if (chucks.length >= 1 && isRelativeObject(chucks[chucks.length - 1]) && isRelativeObject(value)) {
+    // 							// 다음 내일 -> [{diff: 1}, {diff: 2}] -> {diff: 1+2}
+    // 							// 내일 다음 -> [{diff: 2}, {diff: 1}] -> {diff: 2+1}
+    //
+    // 							chucks[chucks.length - 1].diff += value.diff;
+    // 						}
+    // 						else if (Array.isArray(value))
+    // 							chucks.push(...value);
+    // 						else
+    // 							chucks.push(value);
+    //
+    // 						startIdx += key.length;
+    // 						found = true;
+    //
+    // 						break;
+    // 					}
+    // 				}
+    //
+    // 				if (!found) {
+    // 					if (chucks.length === 0)
+    // 						chucks.push('');
+    //
+    // 					if (foundBefore)
+    // 						chucks.push(dstr[startIdx++]);
+    // 					else
+    // 						chucks[chucks.length - 1] += dstr[startIdx++];
+    // 				}
+    // 			}
+    //
+    // 			return chucks.map(e => isNumberRegex.test(e) ? parseFloat(e) : e);
+    // 		};
+    //
+    // 		let splited = dateString.split(' ').map(getTokens).flat();
+    // 		let tokens = [];
+    //
+    // 		/**
+    // 		 * 공백이 없는 문자열에서의 토큰들끼리는 잘 merge 되었으나, 공백이 없는 문자열들끼리의 토큰들끼리의 merge를 처리해야함.
+    // 		 * ex. 다음 다음다음 날 -> [다음, 다음다음, 날] -> [{diff: 1}, {diff: 2}, 'day'] -> [{diff: 1+2}, 'day']
+    // 		 * 위의 예시에서 1+2를 하는 작업을 아래 코드에서 수행함.
+    // 		 */
+    // 		while (splited.length > 0) {
+    // 			let value = splited.shift();
+    //
+    // 			if (tokens.length >= 1 && typeof tokens[tokens.length - 1] === 'number' && typeof value === 'number') {
+    // 				if (tokens[tokens.length - 1] > value)
+    // 					tokens[tokens.length - 1] += value;
+    // 				else
+    // 					tokens[tokens.length - 1] *= value;
+    // 			}
+    // 			else if (tokens.length >= 1 && isRelativeObject(tokens[tokens.length - 1]) && isRelativeObject(value)) {
+    // 				tokens[tokens.length - 1].diff += value.diff;
+    // 			}
+    // 			else if (Array.isArray(value))
+    // 				tokens.push(...value);
+    // 			else
+    // 				tokens.push(value);
+    // 		}
+    //
+    // 		// 세 시간 반 -> 3.5시간
+    // 		for (let i = 2; i < tokens.length; i++) {
+    // 			if (keywords.units.has(tokens[i - 1]) &&
+    // 				keywords.counts.has(tokens[i]) &&
+    // 				tokens[i] === 'half' &&
+    // 				typeof tokens[i - 2] === 'number'
+    // 			) {
+    // 				tokens[i - 2] += 0.5;
+    // 				tokens.splice(i, 1);
+    // 				i--;
+    // 			}
+    // 		}
+    //
+    // 		// [3.5, '시간', '뒤'] -> [{ diff: 3.5 }, '시간']
+    // 		let i = 0;
+    // 		while (i < tokens.length) {
+    // 			if (keywords.relative.has(tokens[i])) {
+    // 				if (!standard)
+    // 					standard = DateTime.now();
+    //
+    // 				const multiplier = tokens[i] === 'ago' ? -1 : 1;
+    //
+    // 				for (let j = i - 1; j >= 0; j--) {
+    // 					if (keywords.standard.has(tokens[j]))
+    // 						break;
+    //
+    // 					let diff;
+    //
+    // 					if (typeof tokens[j] === 'number')
+    // 						diff = tokens[j] * multiplier;
+    // 					else if (isRelativeObject(tokens[j]))
+    // 						diff = tokens[j].diff * multiplier;
+    //
+    // 					if (diff !== undefined)
+    // 						tokens[j] = { diff };
+    // 				}
+    //
+    // 				tokens.splice(i, 1);
+    // 				i = -1;
+    // 			}
+    // 			i++;
+    // 		}
+    //
+    // 		// [2022, 'year', 3, 'month', 2, 'day', 12, 'hour', 34, 'minute', 56, 'second']
+    // 		const absoluteParse = () => {
+    // 			const dateObject = {};
+    // 			let meridiem = 'pm';
+    //
+    // 			for (let i = 0; i < tokens.length; i++) {
+    // 				let token = tokens[i];
+    //
+    // 				if (keywords.units.has(token)) {    // year, month, week, day, hour, minute, second, millisecond 감지
+    // 					if (cultureInfo['isTurnReversed'] === false) {   // 한국어처럼 '2022년' 과 같이 뒤에 단위가 붙는 경우
+    // 						if (typeof tokens[i - 1] === 'number') {
+    // 							dateObject[token] = tokens[i - 1];
+    // 						}
+    // 						// else
+    // 						// 	throw new Error(`invalid format: { dateObject[${token}]: ${tokens[i - 1]} }`);
+    // 					}
+    // 					else {    // 영어처럼 'year 2022' 와 같이 앞에 단위가 붙는 경우
+    // 						if (typeof tokens[i + 1] === 'number')
+    // 							dateObject[token] = tokens[i + 1];
+    // 						// else
+    // 						// 	throw new Error(`invalid format: { dateObject[${token}]: ${tokens[i + 1]} }`);
+    // 					}
+    // 				}
+    // 				else if (keywords.meridiems.has(token)) {
+    // 					meridiem = token;
+    // 				}
+    // 				else if ('hour' in dateObject) {
+    // 					if (keywords.meridiems.has(token))    // am, pm
+    // 						meridiem = token;
+    //
+    // 					if (dateObject['hour'] < 12 && meridiem === 'pm')
+    // 						dateObject['hour'] += 12;
+    // 				}
+    // 			}
+    //
+    // 			return dateObject;
+    // 		};
+    //
+    // 		// [3, 'year', 'ago']
+    // 		const relativeParse = () => {
+    // 			const dateObject = {};
+    // 			let standard_now = DateTime.now();
+    //
+    // 			for (let i = 0; i < tokens.length; i++) {
+    // 				let token = tokens[i];
+    //
+    // 				if (keywords.standard.has(token)) {     // 3월 3일로부터
+    // 					standard = DateTime._parse(tokens.slice(0, i).join(' '), locale)[0];
+    // 					standard_now = DateTime.fromObject(standard);
+    // 				}
+    // 				else if (keywords.counts.has(token)) {    // [half] week, [end] month, 11 [th] month, 11 [th] sunday, ...
+    // 					tokens[i + 1] ??= 'millisecond';    // 2023년의 마지막 -> 2023년 12월 31일 23시 59분 59초 999밀리초
+    //
+    // 					if (keywords.units.has(tokens[i + 1]) || keywords.weekdays.has(tokens[i + 1])) {
+    // 						let tokenFront = tokens[i - 1]; // 11, 3, 1, ...
+    // 						// token;  // th, half, end
+    // 						let tokenBack = tokens[i + 1];  // month, week, day, sunday, ...
+    //
+    // 						let amount;
+    // 						if (token === 'half')
+    // 							amount = length => Math.floor(length / 2);
+    // 						else if (token === 'th') {
+    // 							if (typeof tokenFront !== 'number')
+    // 								throw new Error(`invalid format: "${tokenFront} th"`);
+    // 							amount = length => Math.min(tokenFront, length);
+    // 						}
+    // 						else if (token === 'end')
+    // 							amount = length => length;
+    //
+    // 						switch (tokenBack) {
+    // 							case 'year': {
+    // 								if (token === 'half')
+    // 									dateObject['day'] = amount(DateTime.lengthOfYear(dateObject['year'] ?? standard_now.year));
+    // 								else
+    // 									throw new Error('invalid format: "th/end 해"');
+    //
+    // 								dateObject['hour'] = 0;
+    // 								dateObject['minute'] = 0;
+    // 								dateObject['second'] = 0;
+    // 								dateObject['millisecond'] = 0;
+    // 								break;
+    // 							}
+    // 							case 'month': {
+    // 								if (token === 'half') {
+    // 									dateObject['day'] = amount(DateTime.lengthOfMonth(dateObject['year'] ?? standard_now.year, dateObject['month'] ?? standard_now.month));
+    // 									dateObject['hour'] = 0;
+    // 									dateObject['minute'] = 0;
+    // 									dateObject['second'] = 0;
+    // 									dateObject['millisecond'] = 0;
+    // 								}
+    // 								else {
+    // 									dateObject['month'] = amount(12);
+    // 									dateObject['day'] = 1;
+    // 									dateObject['hour'] = 0;
+    // 									dateObject['minute'] = 0;
+    // 									dateObject['second'] = 0;
+    // 									dateObject['millisecond'] = 0;
+    // 								}
+    // 								break;
+    // 							}
+    // 							case 'week': {
+    // 								if (token === 'half') {
+    // 									dateObject['day'] = standard_now.day + (amount(7) - standard_now.weekday + 7) % 7;
+    // 									dateObject['hour'] = 0;
+    // 									dateObject['minute'] = 0;
+    // 									dateObject['second'] = 0;
+    // 									dateObject['millisecond'] = 0;
+    // 								}
+    // 								else {
+    // 									dateObject['day'] = standard_now.day + (0 - dateObject['weekday'] + 7) % 7;
+    // 									let lengthOfMonth = DateTime.lengthOfMonth(dateObject['year'] ?? standard_now.year, dateObject['month'] ?? standard_now.month);
+    //
+    // 									// 만약 23일이 일요일이라면 16, 9, 2일이 셋째주, 둘째주, 셋째주가 됨
+    // 									// 23 % 7 == 2 이므로 2일이 첫주의 시작이 되어야 함
+    // 									// 이 달의 길이가 31일이라면 (31 - 2) // 7 == 4 이므로 4주차가 됨 (2, 9, 16, 23, 30)
+    // 									let first = dateObject['day'] % 7;
+    // 									let weeks = [ first ];
+    // 									for (let i = first + 7; i <= lengthOfMonth; i += 7)
+    // 										weeks.push(i);
+    //
+    // 									dateObject['day'] = weeks[amount(weeks.length)];
+    // 									dateObject['hour'] = 0;
+    // 									dateObject['minute'] = 0;
+    // 									dateObject['second'] = 0;
+    // 									dateObject['millisecond'] = 0;
+    // 								}
+    // 								break;
+    // 							}
+    // 							case 'day': {
+    // 								if (token === 'half') {
+    // 									dateObject['hour'] = amount(24);
+    // 									dateObject['minute'] = 0;
+    // 									dateObject['second'] = 0;
+    // 									dateObject['millisecond'] = 0;
+    // 								}
+    // 									// else if (token === 'end') {
+    // 									//
+    // 								// }
+    // 								else {  // th
+    // 									dateObject['day'] = amount(DateTime.lengthOfMonth(dateObject['year'] ?? standard_now.year, dateObject['month'] ?? standard_now.month));
+    // 									dateObject['hour'] = 0;
+    // 									dateObject['minute'] = 0;
+    // 									dateObject['second'] = 0;
+    // 									dateObject['millisecond'] = 0;
+    // 								}
+    // 								break;
+    // 							}
+    // 							case 'hour': {
+    // 								if (token === 'half') {
+    // 									dateObject['minute'] = amount(60);
+    // 									dateObject['second'] = 0;
+    // 									dateObject['millisecond'] = 0;
+    // 								}
+    // 								else {
+    // 									dateObject['hour'] = amount(24);
+    // 									dateObject['minute'] = 0;
+    // 									dateObject['second'] = 0;
+    // 									dateObject['millisecond'] = 0;
+    // 								}
+    // 								break;
+    // 							}
+    // 							case 'minute': {
+    // 								if (token === 'half') {
+    // 									dateObject['second'] = amount(60);
+    // 									dateObject['millisecond'] = 0;
+    // 								}
+    // 								else {
+    // 									dateObject['minute'] = amount(60);
+    // 									dateObject['second'] = 0;
+    // 									dateObject['millisecond'] = 0;
+    // 								}
+    // 								break;
+    // 							}
+    // 							case 'second': {
+    // 								if (token === 'half') {
+    // 									dateObject['millisecond'] = amount(1000);
+    // 								}
+    // 								else {
+    // 									dateObject['second'] = amount(60);
+    // 									dateObject['millisecond'] = 0;
+    // 								}
+    // 								break;
+    // 							}
+    // 							case 'millisecond': {
+    // 								if (token === 'half')
+    // 									throw new Error('invalid format: "half 밀리초"');
+    // 								else
+    // 									dateObject['millisecond'] = amount(1000);
+    // 								break;
+    // 							}
+    // 							default: {  // weekday
+    // 								if (token === 'half')
+    // 									throw new Error('invalid format: "half 요일"');
+    // 								else {
+    // 									dateObject['day'] = standard_now.day + (DateTime.getWeekDayFromName(tokenBack, locale = 'en-US') - standard_now.weekday + 7) % 7;
+    // 									let lengthOfMonth = DateTime.lengthOfMonth(dateObject['year'] ?? standard_now.year, dateObject['month'] ?? standard_now.month);
+    //
+    // 									let first = dateObject['day'] % 7;
+    // 									let weeks = [ first ];
+    // 									for (let i = first + 7; i <= lengthOfMonth; i += 7)
+    // 										weeks.push(i);
+    //
+    // 									dateObject['day'] = weeks[amount(weeks.length)];
+    // 									dateObject['hour'] = 0;
+    // 									dateObject['minute'] = 0;
+    // 									dateObject['second'] = 0;
+    // 									dateObject['millisecond'] = 0;
+    // 								}
+    // 							}
+    // 						}
+    // 					}
+    // 				}
+    // 				else if (keywords.times.has(token)) {
+    // 					dateObject['minute'] = 0;
+    // 					dateObject['second'] = 0;
+    // 					dateObject['millisecond'] = 0;
+    //
+    // 					if (token === 'morning')
+    // 						dateObject['hour'] = 9;
+    // 					else if (token === 'noon')
+    // 						dateObject['hour'] = 12;
+    // 					else if (token === 'afternoon')
+    // 						dateObject['hour'] = 15;
+    // 					else if (token === 'evening')
+    // 						dateObject['hour'] = 18;
+    // 					else if (token === 'night')
+    // 						dateObject['hour'] = 21;
+    // 					else if (token === 'midnight') {
+    // 						dateObject['hour'] = 0;
+    // 						dateObject['day'] = dateObject['day'] ?? standard_now.day + 1;
+    // 					}
+    // 				}
+    // 				else if (isRelativeObject(token)) {
+    // 					if (keywords.units.has(tokens[i + 1])) {
+    // 						dateObject[tokens[i + 1]] = standard_now[tokens[i + 1]] + token.diff;
+    // 					}
+    // 				}
+    // 			}
+    //
+    // 			return dateObject;
+    // 		};
+    //
+    // 		const absolute = absoluteParse();
+    // 		const relative = relativeParse();
+    // 		const result = Object.assign(absolute, relative);
+    //
+    // 		if (Object.keys(result).length > 0)
+    // 			return [ result, standard ];
+    // 	};
+    //
+    // 	let parsed = parse1() ?? parse2();
+    //
+    // 	if (parsed !== undefined)
+    // 		return [ parsed, undefined ];
+    // 	else {
+    // 		let parsed = parse3();
+    //
+    // 		if (parsed !== undefined)
+    // 			return parsed;
+    // 		else
+    // 			throw new Error('Invalid date string: ' + dateString);
+    // 	}
+    // }
   }, {
     key: "now",
     value: function now() {
@@ -1142,8 +1607,8 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "january",
     value: function january(day) {
-      var _day2;
-      day = (_day2 = day) !== null && _day2 !== void 0 ? _day2 : 1;
+      var _day3;
+      day = (_day3 = day) !== null && _day3 !== void 0 ? _day3 : 1;
       return new DateTime({
         month: 1,
         day: day
@@ -1152,8 +1617,8 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "february",
     value: function february(day) {
-      var _day3;
-      day = (_day3 = day) !== null && _day3 !== void 0 ? _day3 : 1;
+      var _day4;
+      day = (_day4 = day) !== null && _day4 !== void 0 ? _day4 : 1;
       return new DateTime({
         month: 2,
         day: day
@@ -1162,8 +1627,8 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "march",
     value: function march(day) {
-      var _day4;
-      day = (_day4 = day) !== null && _day4 !== void 0 ? _day4 : 1;
+      var _day5;
+      day = (_day5 = day) !== null && _day5 !== void 0 ? _day5 : 1;
       return new DateTime({
         month: 3,
         day: day
@@ -1172,8 +1637,8 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "april",
     value: function april(day) {
-      var _day5;
-      day = (_day5 = day) !== null && _day5 !== void 0 ? _day5 : 1;
+      var _day6;
+      day = (_day6 = day) !== null && _day6 !== void 0 ? _day6 : 1;
       return new DateTime({
         month: 4,
         day: day
@@ -1182,8 +1647,8 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "may",
     value: function may(day) {
-      var _day6;
-      day = (_day6 = day) !== null && _day6 !== void 0 ? _day6 : 1;
+      var _day7;
+      day = (_day7 = day) !== null && _day7 !== void 0 ? _day7 : 1;
       return new DateTime({
         month: 5,
         day: day
@@ -1192,8 +1657,8 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "june",
     value: function june(day) {
-      var _day7;
-      day = (_day7 = day) !== null && _day7 !== void 0 ? _day7 : 1;
+      var _day8;
+      day = (_day8 = day) !== null && _day8 !== void 0 ? _day8 : 1;
       return new DateTime({
         month: 6,
         day: day
@@ -1202,8 +1667,8 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "july",
     value: function july(day) {
-      var _day8;
-      day = (_day8 = day) !== null && _day8 !== void 0 ? _day8 : 1;
+      var _day9;
+      day = (_day9 = day) !== null && _day9 !== void 0 ? _day9 : 1;
       return new DateTime({
         month: 7,
         day: day
@@ -1212,8 +1677,8 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "august",
     value: function august(day) {
-      var _day9;
-      day = (_day9 = day) !== null && _day9 !== void 0 ? _day9 : 1;
+      var _day10;
+      day = (_day10 = day) !== null && _day10 !== void 0 ? _day10 : 1;
       return new DateTime({
         month: 8,
         day: day
@@ -1222,8 +1687,8 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "september",
     value: function september(day) {
-      var _day10;
-      day = (_day10 = day) !== null && _day10 !== void 0 ? _day10 : 1;
+      var _day11;
+      day = (_day11 = day) !== null && _day11 !== void 0 ? _day11 : 1;
       return new DateTime({
         month: 9,
         day: day
@@ -1232,8 +1697,8 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "october",
     value: function october(day) {
-      var _day11;
-      day = (_day11 = day) !== null && _day11 !== void 0 ? _day11 : 1;
+      var _day12;
+      day = (_day12 = day) !== null && _day12 !== void 0 ? _day12 : 1;
       return new DateTime({
         month: 10,
         day: day
@@ -1242,8 +1707,8 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "november",
     value: function november(day) {
-      var _day12;
-      day = (_day12 = day) !== null && _day12 !== void 0 ? _day12 : 1;
+      var _day13;
+      day = (_day13 = day) !== null && _day13 !== void 0 ? _day13 : 1;
       return new DateTime({
         month: 11,
         day: day
@@ -1284,13 +1749,20 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "getWeekDayFromName",
     value: function getWeekDayFromName(weekDayName) {
-      var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ko-KR';
+      var startOnMon = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      var locale = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'ko-KR';
       var cultureInfo = IS_DIST ? JSON.parse(FileStream.read("/sdcard/msgbot/global_modules/datetime/globalization/".concat(locale, ".json"))) : require("./globalization/".concat(locale, ".json"));
       if (!cultureInfo) throw new Error('Invalid locale, not found ' + locale);
-      var ret = cultureInfo['W'].map(function (e) {
+      var W = cultureInfo['W'];
+      var WW = cultureInfo['WW'];
+      if (startOnMon) {
+        W = W.slice(1).concat(W[0]);
+        WW = WW.slice(1).concat(WW[0]);
+      }
+      var ret = W.map(function (e) {
         return e.toLowerCase();
       }).indexOf(weekDayName.toLowerCase());
-      if (ret === -1) ret = cultureInfo['WW'].map(function (e) {
+      if (ret === -1) ret = WW.map(function (e) {
         return e.toLowerCase();
       }).indexOf(weekDayName.toLowerCase());
       if (ret === -1) throw new Error('Invalid weekDayName, not found ' + weekDayName);
@@ -1299,305 +1771,7 @@ var DateTime = /*#__PURE__*/function () {
   }]);
   return DateTime;
 }();
-var Parser = /*#__PURE__*/function () {
-  function Parser() {
-    var locale = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'ko-KR';
-    _classCallCheck(this, Parser);
-    this.locale = locale;
-    this.cultureInfo = IS_DIST ? JSON.parse(FileStream.read("/sdcard/msgbot/global_modules/datetime/globalization/".concat(locale, ".json"))) : require("./globalization/".concat(locale, ".json"));
-    if (!this.cultureInfo) throw new Error('Invalid locale, not found ' + locale);
-    this.replaces = this.cultureInfo.replaces;
-    this.keywords = this.cultureInfo.keywords;
-  }
-  _createClass(Parser, [{
-    key: "normalization",
-    value: function normalization(dateString) {
-      var ret = dateString.trim().replace(/\s+/g, ' ');
-      var _iterator = _createForOfIteratorHelper(Parser.objectLoop(this.replaces)),
-        _step;
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var _step$value = _slicedToArray(_step.value, 2),
-            key = _step$value[0],
-            value = _step$value[1];
-          if (Parser.isRepeatObject(value)) {
-            var i = new Parser.RepeatToken(key, value);
-            if (i.key.test(ret)) ret = i.replace(ret);
-          } else if (Parser.isContinueObject(value)) {
-            var _i9 = new Parser.ContinueToken(key, value);
-            if (_i9.key.test(ret)) ret = _i9.replace(ret);
-          } else ret = ret.replaceAll(key, value);
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
-      }
-      return ret;
-    }
-  }, {
-    key: "getTokensInNonSpace",
-    value: function getTokensInNonSpace(dateString) {
-      var startIdx = 0;
-      var chucks = [];
-      var found = false;
-      var foundBefore = false;
-      var dict = {};
-      for (var keyword in this.keywords) {
-        for (var key in this.keywords[keyword]) {
-          if (key in dict) dict[key] = {
-            meanings: [dict[key], this.keywords[keyword][key]]
-          };else dict[key] = this.keywords[keyword][key];
-        }
-      }
-      while (startIdx < dateString.length) {
-        foundBefore = found;
-        found = false;
-        var _iterator2 = _createForOfIteratorHelper(Parser.objectLoop(dict)),
-          _step2;
-        try {
-          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-            var _step2$value = _slicedToArray(_step2.value, 2),
-              _key = _step2$value[0],
-              value = _step2$value[1];
-            if (dateString.startsWith(_key, startIdx)) {
-              if (chucks.length >= 1 && typeof chucks[chucks.length - 1] === 'number' && typeof value === 'number') {
-                // 십이 -> [10, 2] -> 10+2
-                // 이십 -> [2, 10] -> 2*10
-                if (chucks[chucks.length - 1] > value) chucks[chucks.length - 1] += value;else chucks[chucks.length - 1] *= value;
-              } else if (chucks.length >= 1 && Parser.isDiffObject(chucks[chucks.length - 1]) && Parser.isDiffObject(value)) {
-                // 다음 내일 -> [{diff: 1}, {diff: 2}] -> {diff: 1+2}
-                // 내일 다음 -> [{diff: 2}, {diff: 1}] -> {diff: 2+1}
-
-                chucks[chucks.length - 1].diff += value.diff;
-              } else if (Array.isArray(value)) chucks.push.apply(chucks, _toConsumableArray(value));else chucks.push(value);
-              startIdx += _key.length;
-              found = true;
-              break;
-            }
-          }
-        } catch (err) {
-          _iterator2.e(err);
-        } finally {
-          _iterator2.f();
-        }
-        if (!found) {
-          if (chucks.length === 0) chucks.push('');
-          if (foundBefore) chucks.push(dateString[startIdx++]);else chucks[chucks.length - 1] += dateString[startIdx++];
-        }
-      }
-      return chucks.map(function (e) {
-        return Parser.isNumberRegex.test(e) ? parseFloat(e) : e;
-      });
-    }
-  }, {
-    key: "getTokens",
-    value: function getTokens(dateString) {
-      var notMerged = dateString.split(' ').map(this.getTokensInNonSpace);
-      var tokens = [];
-
-      /**
-       * 공백이 없는 문자열에서의 토큰들끼리는 잘 merge 되었으나, 공백이 없는 문자열들끼리의 토큰들끼리의 merge를 처리해야함.
-       * ex. 다음 다음다음 날 -> [다음, 다음다음, 날] -> [{diff: 1}, {diff: 2}, 'day'] -> [{diff: 1+2}, 'day']
-       * 위의 예시에서 1+2를 하는 작업을 아래 코드에서 수행함.
-       */
-      while (notMerged.length > 0) {
-        var value = notMerged.shift();
-        if (tokens.length >= 1 && typeof tokens[tokens.length - 1] === 'number' && typeof value === 'number') {
-          if (tokens[tokens.length - 1] > value) tokens[tokens.length - 1] += value;else tokens[tokens.length - 1] *= value;
-        } else if (tokens.length >= 1 && Parser.isDiffObject(tokens[tokens.length - 1]) && Parser.isDiffObject(value)) {
-          tokens[tokens.length - 1].diff += value.diff;
-        } else if (Array.isArray(value)) tokens.push.apply(tokens, _toConsumableArray(value));else tokens.push(value);
-      }
-      return tokens;
-    }
-  }, {
-    key: "parse_ISO",
-    value: function parse_ISO(dateString) {
-      var m = dateString.match( /*#__PURE__*/_wrapRegExp(/^(\d{4})\x2D(\d{2})\x2D(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{3}))?Z$/, {
-        year: 1,
-        month: 2,
-        day: 3,
-        hour: 4,
-        minute: 5,
-        second: 6,
-        millisecond: 7
-      }));
-      if (m) {
-        return {
-          year: m.groups.year,
-          month: m.groups.month,
-          day: m.groups.day,
-          hour: m.groups.hour,
-          minute: m.groups.minute,
-          second: m.groups.second,
-          millisecond: m.groups.millisecond
-        };
-      }
-    }
-  }, {
-    key: "parse_common",
-    value: function parse_common(dateString) {
-      var date = dateString.match( /*#__PURE__*/_wrapRegExp(/(?:(\d{4})[-.\/])? *(\d{1,2})[-.\/] *(\d{1,2})\.?/, {
-        year: 1,
-        month: 2,
-        day: 3
-      }));
-      var time = dateString.match( /*#__PURE__*/_wrapRegExp(/(\d{1,2}) *: *(\d{1,2})(?: *: *(\d{1,2})(?:\.(\d{1,3}))?)?/, {
-        hour: 1,
-        minute: 2,
-        second: 3,
-        millisecond: 4
-      }));
-      if (date || time) {
-        var _date$groups, _date$groups2, _date$groups3, _time$groups, _time$groups2, _time$groups3, _time$groups4;
-        return {
-          year: date === null || date === void 0 || (_date$groups = date.groups) === null || _date$groups === void 0 ? void 0 : _date$groups.year,
-          month: date === null || date === void 0 || (_date$groups2 = date.groups) === null || _date$groups2 === void 0 ? void 0 : _date$groups2.month,
-          day: date === null || date === void 0 || (_date$groups3 = date.groups) === null || _date$groups3 === void 0 ? void 0 : _date$groups3.day,
-          hour: time === null || time === void 0 || (_time$groups = time.groups) === null || _time$groups === void 0 ? void 0 : _time$groups.hour,
-          minute: time === null || time === void 0 || (_time$groups2 = time.groups) === null || _time$groups2 === void 0 ? void 0 : _time$groups2.minute,
-          second: time === null || time === void 0 || (_time$groups3 = time.groups) === null || _time$groups3 === void 0 ? void 0 : _time$groups3.second,
-          millisecond: time === null || time === void 0 || (_time$groups4 = time.groups) === null || _time$groups4 === void 0 ? void 0 : _time$groups4.millisecond
-        };
-      }
-    }
-  }, {
-    key: "parse_absolute",
-    value: function parse_absolute(dateString) {}
-  }, {
-    key: "parse_relative",
-    value: function parse_relative(dateString) {}
-  }, {
-    key: "parse",
-    value: function parse(dateString) {
-      var _this$parse_ISO, _parsed2;
-      dateString = this.normalization(dateString);
-      var tokens = this.getTokens(dateString);
-      var parsed = (_this$parse_ISO = this.parse_ISO(dateString)) !== null && _this$parse_ISO !== void 0 ? _this$parse_ISO : this.parse_common(dateString);
-      (_parsed2 = parsed) !== null && _parsed2 !== void 0 ? _parsed2 : parsed = Object.assign(this.parse_absolute(dateString), this.parse_relative(dateString));
-      if (parsed !== undefined) return parsed;else throw new Error('Invalid date string: ' + dateString);
-    }
-  }], [{
-    key: "isContinueObject",
-    value: function isContinueObject(obj) {
-      return obj.constructor === Object && 'offset' in obj && typeof obj.offset === 'number' && 'tail' in obj && typeof obj.tail === 'string' && Object.keys(obj).length === 2;
-    }
-  }, {
-    key: "isRepeatObject",
-    value: function isRepeatObject(obj) {
-      return obj.constructor === Object && 'repeat' in obj && typeof obj.repeat === 'string' && Object.keys(obj).length === 1;
-    }
-  }, {
-    key: "isDiffObject",
-    value: function isDiffObject(obj) {
-      return obj.constructor === Object && 'diff' in obj && typeof obj.diff === 'number' && Object.keys(obj).length === 1;
-    }
-  }, {
-    key: "isHomonymObject",
-    value: function isHomonymObject(obj) {
-      return obj.constructor === Object && 'meanings' in obj && Array.isArray(obj.meanings) && Object.keys(obj).length === 1;
-    }
-  }, {
-    key: "objectLoop",
-    value: function objectLoop(obj) {
-      var keys = Object.keys(obj);
-
-      // 키들의 길이로 정렬하기 때문에, '매주' 와 '주' 에서 '매주'에 먼저 매칭될 수 있게 함.
-      // continue, repeat token들은 길이가 훨씬 길어질 수 있으므로(ex. 저저저저저저번) 가장 우선순위를 높임.
-      keys.sort(function (a, b) {
-        if (a.includes('+') && !b.includes('+')) return -1;
-        if (!a.includes('+') && b.includes('+')) return 1;
-        return a.length !== b.length ? b.length - a.length : a.localeCompare(b);
-      });
-      return keys.map(function (k) {
-        return [k, obj[k]];
-      });
-    }
-  }]);
-  return Parser;
-}();
-/**
- * @param {string} string
- *
- *
- */
-_Parser = Parser;
-_defineProperty(Parser, "isNumberRegex", /^[+-]?\d+(?:\.\d*)?$/);
-_defineProperty(Parser, "Token", /*#__PURE__*/function () {
-  function _class(key, obj) {
-    _classCallCheck(this, _class);
-    this.key = new RegExp(key, 'g');
-  }
-  _createClass(_class, [{
-    key: "replace",
-    value: function replace(str) {
-      return 'Not implemented';
-    }
-  }]);
-  return _class;
-}());
-_defineProperty(Parser, "ContinueToken", /*#__PURE__*/function (_Parser$Token) {
-  _inherits(_class2, _Parser$Token);
-  function _class2(key, obj) {
-    var _this2;
-    _classCallCheck(this, _class2);
-    if (!_Parser.isContinueObject(obj)) throw new Error();
-    _this2 = _callSuper(this, _class2, [key, obj]);
-    _this2.offset = obj.offset;
-    _this2.tail = obj.tail;
-    return _this2;
-  }
-  _createClass(_class2, [{
-    key: "replace",
-    value: function replace(str) {
-      var _this3 = this;
-      return str.replace(this.key, function (m, g) {
-        return "".concat(_this3.offset + g.length).concat(_this3.tail);
-      });
-    }
-  }]);
-  return _class2;
-}(_Parser.Token));
-_defineProperty(Parser, "RepeatToken", /*#__PURE__*/function (_Parser$Token2) {
-  _inherits(_class3, _Parser$Token2);
-  function _class3(key, obj) {
-    var _this4;
-    _classCallCheck(this, _class3);
-    if (!_Parser.isRepeatObject(obj)) throw new Error();
-    _this4 = _callSuper(this, _class3, [key, obj]);
-    _this4.repeat = obj.repeat;
-    return _this4;
-  }
-
-  /**
-   * @example (저+)번: 저저번 그래도 -> 저번 저번 그래도
-   */
-  _createClass(_class3, [{
-    key: "replace",
-    value: function replace(str) {
-      var _this5 = this;
-      return str.replace(this.key, function (m, g) {
-        return Array(g.length).fill(_this5.repeat).join(' ');
-      });
-    }
-  }]);
-  return _class3;
-}(_Parser.Token));
-var _getToken = function _getToken(string) {};
-
-/**
- * @param {string} dateString
- * @param {string} [locale='ko-KR']
- *
- *
- */
-var _parse = function _parse(dateString) {
-  var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ko-KR';
-};
 exports.DateTime = DateTime;
 exports.Date = Date;
 exports.Time = Time;
-exports.Duration = Duration;
-exports.Parser = Parser;
-exports.$D = $D;
+exports.$D = $D; // 원래 JS의 Date 객체
