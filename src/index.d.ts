@@ -38,7 +38,7 @@ export declare class Date {
 	
 	eq(dateObject: Date | DateTemplate): boolean;
 	
-	sub(dateObject: Date | Duration | DateTemplate): Duration | Date;
+	subtract(dateObject: Date | Duration | DateTemplate): Duration | Date;
 	
 	toString(): string;
 	
@@ -69,7 +69,7 @@ export declare class Time {
 	
 	eq(timeObject: Time | TimeTemplate): boolean;
 	
-	sub(timeObject: Time | Duration | TimeTemplate): Duration | Time;
+	subtract(timeObject: Time | Duration | TimeTemplate): Duration | Time;
 	
 	toString(): string;
 	
@@ -174,7 +174,7 @@ export declare class DateTime {
 	
 	add(datetimeObject: DateTime | Duration | DurationTemplate): DateTime;
 	
-	sub(datetimeObject: DateTime | Duration | DurationTemplate): DateTime | Duration;
+	subtract(datetimeObject: DateTime | Duration | DurationTemplate): DateTime | Duration;
 	
 	set(datetimeObject: DateTime | SetDateTimeTemplate | Date | Time): DateTime;
 	
@@ -198,11 +198,11 @@ export declare class DateTime {
 	
 	static set(datetimeObject: SetDateTimeTemplate): DateTime;
 	
-	static parse(dateString: string, locale?: string): DateTime;
+	static parse(dateString: string, locale?: string): DateTime | undefined;
 	
-	static parseWithFilteredString(dateString: string, locale?: string): [ DateTime, string ];
+	static parseWithFilteredString(dateString: string, locale?: string): { parse: DateTime | undefined, string: string };
 	
-	private static _parse(dateString: string, locale?: string): [ SetDateTimeTemplate, string? ];
+	// private static _parse(dateString: string, locale?: string): [ SetDateTimeTemplate, string? ];
 	
 	static now(): DateTime;
 	
@@ -258,7 +258,7 @@ export declare class DateTime {
 	
 	static lengthOfYear(year: number): number;
 	
-	static getWeekDayFromName(weekDayName: string, startOnMon?: boolean, locale?: string): number;
+	static getWeekdayFromName(weekDayName: string, startOnMon?: boolean, locale?: string): number;
 	
 	isLeapYear(): boolean;
 	

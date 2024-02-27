@@ -54,7 +54,7 @@ class Date {
 		return this.year === year && this.month === month && this.day === day;
 	}
 	
-	sub(dateObject) {
+	subtract(dateObject) {
 		if (dateObject instanceof Date)
 			return new Duration(this._source.getTime() - dateObject._source.getTime());
 		else if (dateObject instanceof Duration) {
@@ -114,7 +114,7 @@ class Time {
 		return this.hour === hour && this.minute === minute && this.second === second && this.millisecond === millisecond;
 	}
 	
-	sub(timeObject) {
+	subtract(timeObject) {
 		if (timeObject instanceof Time)
 			return new Duration(this._source.getTime() - timeObject._source.getTime());
 		else if (timeObject instanceof Duration) {
@@ -347,8 +347,8 @@ class DateTime {
 			time: ''
 		}
 		
-		let dayDiff = this.date.sub(now.date).day;
-		let secDiff = Math.ceil(this.sub(now).amount / 1000);
+		let dayDiff = this.date.subtract(now.date).day;
+		let secDiff = Math.ceil(this.subtract(now).amount / 1000);
 		
 		let specials = {};
 		specials[-2] = '그제';
@@ -587,7 +587,7 @@ class DateTime {
 		}
 	}
 	
-	sub(datetimeObject) {
+	subtract(datetimeObject) {
 		if (datetimeObject instanceof DateTime)
 			return new Duration(this.timestamp() - datetimeObject.timestamp());
 		else if (datetimeObject instanceof Duration) {
@@ -640,6 +640,8 @@ class DateTime {
 			if (datetimeObject.millisecond != null)
 				this.millisecond = datetimeObject.millisecond;
 		}
+		
+		return this;
 	}
 	
 	eq(datetimeObject, ignoreMillisecond = false) {
@@ -708,7 +710,7 @@ class DateTime {
 	}
 	
 	static parse(dateString, locale = 'ko-KR') {
-		return DateTime.parseWithFilteredString(dateString, locale)[0];
+		return DateTime.parseWithFilteredString(dateString, locale).parse;
 	}
 	
 	static parseWithFilteredString(dateString, locale = 'ko-KR') {
@@ -719,7 +721,7 @@ class DateTime {
 		if (!cultureInfo)
 			throw new Error('Invalid locale, not found ' + locale);
 		
-		const replaces = Object.entries(cultureInfo.replaces);
+		const replaces = Object.entries(cultureInfo['replaces']);
 		replaces.sort((a, b) => b[0].length - a[0].length); // '내일모레'와 '모레'가 모두 매칭되는 경우, '내일모레'가 먼저 매칭되도록 함.
 		
 		dateString = dateString.trim().replace(/\s+/g, ' ');
@@ -759,6 +761,7 @@ class DateTime {
 		
 		const common_parse = () => {
 			let year, month, day, hour, minute, second, millisecond;
+			let idx = -1;
 			
 			const mix = {
 				ymd: /(?<year>\d{4})[-.\/] *(?<month>\d{1,2})[-.\/] *(?<day>\d{1,2})\.?/,
@@ -771,8 +774,10 @@ class DateTime {
 			const matchedMix = {};
 			for (let key in mix) {
 				const match = dateString.match(mix[key]);
-				if (match)
+				if (match) {
 					matchedMix[key] = match;
+					idx = Math.max(idx, match.index);
+				}
 			}
 			
 			if (matchedMix.ymd) {
@@ -826,6 +831,7 @@ class DateTime {
 				if (match) {
 					filtering(match[0]);
 					matched[key] = match[0];
+					idx = Math.max(idx, match.index);
 				}
 			}
 			
@@ -860,13 +866,21 @@ class DateTime {
 				filtering('오전');
 				meridian = 'am';
 			}
-			else if (dateString.indexOf('오후') !== -1) {
-				filtering('오후');
-				meridian = 'pm';
+			else if (dateString.indexOf('아침') < idx) {  // 야침 9시 -> 오전 9시
+				filtering('아침');
+				meridian = 'am';
 			}
 			else if (dateString.indexOf('am') !== -1) {
 				filtering('am');
 				meridian = 'am';
+			}
+			else if (dateString.indexOf('오후') !== -1) {
+				filtering('오후');
+				meridian = 'pm';
+			}
+			else if (dateString.indexOf('저녁') < idx) {
+				filtering('저녁');
+				meridian = 'pm';
 			}
 			else if (dateString.indexOf('pm') !== -1) {
 				filtering('pm');
@@ -878,29 +892,29 @@ class DateTime {
 			
 			const now = DateTime.now();
 			
-			if (dateString.indexOf('아침') !== -1) {
+			if (dateString.indexOf('아침') !== -1 && idx === -1) {  // '아침 9시' 라고 했으면 위에서 '오전'으로 이미 필터링 됨. 즉, 이건 '아침'만 있는 경우임.
 				filtering('아침');
 				day = now.gt({ hour: 7, minute: 30 }) ? now.day + 1 : now.day;
 				hour = 7;
 				minute = 30;
 			}
-			else if (dateString.indexOf('정오') !== -1) {
+			else if (dateString.indexOf('정오') !== -1 && idx === -1) {
 				filtering('정오');
 				day = now.gt({ hour: 12 }) ? now.day + 1 : now.day;
 				hour = 12;
 			}
-			else if (dateString.indexOf('점심') !== -1) {
+			else if (dateString.indexOf('점심') !== -1 && idx === -1) {
 				filtering('점심');
 				day = now.gt({ hour: 12, minute: 30 }) ? now.day + 1 : now.day;
 				hour = 12;
 				minute = 30;
 			}
-			else if (dateString.indexOf('저녁') !== -1) {
+			else if (dateString.indexOf('저녁') !== -1 && idx === -1) {
 				filtering('저녁');
 				day = now.gt({ hour: 18 }) ? now.day + 1 : now.day;
 				hour = 18;
 			}
-			else if (dateString.indexOf('자정') !== -1) {
+			else if (dateString.indexOf('자정') !== -1 && idx === -1) {
 				filtering('자정');
 				day = now.day + 1;
 				hour = 0;
@@ -996,7 +1010,7 @@ class DateTime {
 					
 					const today = now.weekday - 1;   // 일월화수목금토가 아니고 월화수목금토일
 					const start = ((ret['day'] ?? 0) + today) % 7;
-					const dest = DateTime.getWeekDayFromName(arr.groups.week, true);
+					const dest = DateTime.getWeekdayFromName(arr.groups.week, true);
 					
 					// console.log(today, start, dest);    // FIXME: debug
 					
@@ -1011,10 +1025,12 @@ class DateTime {
 		
 		const iso_parsed = iso_parse();
 		if (iso_parsed !== undefined)
-			return [ DateTime.fromObject(iso_parsed), filteredString.trim() ];
+			return { parse: DateTime.fromObject(iso_parsed), string: filteredString.trim() };
 		
 		const common_parsed = common_parse();
 		const relative_parsed = relative_parse();
+		if (Object.keys(common_parsed).length === 0 && Object.keys(relative_parsed).length === 0)
+			return { string: filteredString.trim() };
 		
 		// console.log(common_parsed, relative_parsed);    // FIXME: debug
 		
@@ -1047,7 +1063,7 @@ class DateTime {
 				parsed[unit] = common_parsed[unit] ?? relative_parsed[unit];
 		}
 		
-		return [ DateTime.fromObject(parsed), filteredString.trim() ];
+		return { parse: DateTime.fromObject(parsed), string: filteredString.trim() };
 	}
 	
 	// static parse(dateString, locale = 'ko-KR') {
@@ -1650,7 +1666,7 @@ class DateTime {
 	static leapYearCount(start, end) {
 		const l = y => Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400);
 		
-		return l(end) - l(start) + (DateTime.isLeapYear(start) ? 1 : 0);    // [start, end]
+		return l(end - 1) - l(start) + (DateTime.isLeapYear(start) ? 1 : 0);    // [start, end)
 	}
 	
 	static lengthOfMonth(year, month) {
@@ -1661,7 +1677,7 @@ class DateTime {
 		return DateTime.isLeapYear(year) ? 366 : 365;
 	}
 	
-	static getWeekDayFromName(weekDayName, startOnMon = false, locale = 'ko-KR') {
+	static getWeekdayFromName(weekDayName, startOnMon = false, locale = 'ko-KR') {
 		const cultureInfo = IS_DIST
 			? JSON.parse(FileStream.read(`/sdcard/msgbot/global_modules/datetime/globalization/${locale}.json`))
 			: require(`./globalization/${locale}.json`);

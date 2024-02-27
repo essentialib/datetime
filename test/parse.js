@@ -69,3 +69,5 @@ parse = string => {
 // parse`점심`    // ✅
 // parse`저녁`    // ✅
 // parse`자정`    // ✅
+
+parse`아침 9시`;
