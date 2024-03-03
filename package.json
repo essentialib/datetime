@@ -4,8 +4,9 @@
   "description": "template repository for convert to es5 (compatible with kakaotalk bot)",
   "main": "dist/index.js",
   "scripts": {
-    "build": "babel src --out-dir dist --extensions \".ts,.js\" --copy-files --ignore \"*.json\"",
-    "build-js": "babel src --out-dir dist --extensions \".js\" --copy-files --ignore \"*.json,*.d.ts\""
+    "set-dist-true": "node set.js",
+    "build": "babel src --out-dir dist --extensions \".ts,.js\" --copy-files --ignore \"*.json\" && npm run set-dist-true",
+    "build-js": "babel src --out-dir dist --extensions \".js\" --copy-files --ignore \"*.json,*.d.ts\" && npm run set-dist-true"
   },
   "repository": {
     "type": "git",

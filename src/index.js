@@ -1,6 +1,6 @@
 const IS_DIST = false;
-
-let $D = !IS_DIST ? global.Date : Date;
+const $ = `/sdcard/msgbot/global_modules/datetime`;
+const $D = !IS_DIST ? global.Date : Date;
 
 class Duration {
 	constructor(millisecond) {
@@ -230,7 +230,7 @@ class DateTime {
 	
 	get weekdayName() {
 		const cultureInfo = IS_DIST
-			? JSON.parse(FileStream.read(`/sdcard/msgbot/global_modules/datetime/globalization/${this.locale}.json`))
+			? JSON.parse(FileStream.read(`{$}/globalization/${this.locale}.json`))
 			: require(`./globalization/${this.locale}.json`);
 		
 		if (!cultureInfo)
@@ -285,7 +285,7 @@ class DateTime {
 	
 	toString(formatString) {
 		const cultureInfo = IS_DIST
-			? JSON.parse(FileStream.read(`/sdcard/msgbot/global_modules/datetime/globalization/${this.locale}.json`))
+			? JSON.parse(FileStream.read(`${$}/globalization/${this.locale}.json`))
 			: require(`./globalization/${this.locale}.json`);
 		
 		if (!cultureInfo)
@@ -340,7 +340,7 @@ class DateTime {
 		});
 	}
 	
-	humanize() {
+	humanize(ignoreTime = false) {
 		const now = DateTime.now();
 		const str = {
 			date: '',
@@ -401,40 +401,42 @@ class DateTime {
 		}
 		
 		let isRelative = false;
-		if (this.hour === 0 && this.minute === 0 && this.second === 0)
-			str.time = "";  // '오늘 자정'은 마치 내일 0시를 말하는 것 같아서 그냥 '오늘'로 표시
-		else if (this.hour === 12 && this.minute === 0 && this.second === 0)
-			str.time = "정오";
-		else {
-			const sign = secDiff < 0 ? '전' : '후';
-			const amountSec = Math.abs(secDiff);
-			const hour = Math.floor(amountSec / 3600);
-			const minute = Math.floor((amountSec % 3600) / 60);
-			const second = amountSec % 60;
-			
-			if (hour < 6) {
-				isRelative = true;
+		if (!ignoreTime) {
+			if (this.hour === 0 && this.minute === 0 && this.second === 0)
+				str.time = "";  // '오늘 자정'은 마치 내일 0시를 말하는 것 같아서 그냥 '오늘'로 표시
+			else if (this.hour === 12 && this.minute === 0 && this.second === 0)
+				str.time = "정오";
+			else {
+				const sign = secDiff < 0 ? '전' : '후';
+				const amountSec = Math.abs(secDiff);
+				const hour = Math.floor(amountSec / 3600);
+				const minute = Math.floor((amountSec % 3600) / 60);
+				const second = amountSec % 60;
 				
-				if (hour !== 0)
-					str.time += `${hour}시간 `;
-				if (minute !== 0)
-					str.time += `${minute}분 `;
-				// if (second !== 0)
-				// 	str.time += `${second}초 `;
-				// 초와 밀리초는 수행 시간에도 영향을 받고, 너무 세부적이므로 무시. 나중에 config 로 설정할 수 있게?
-				
-				if (str.time !== '')
-					str.time = str.time.trim() + ` ${sign}`;
+				if (hour < 6) {
+					isRelative = true;
+					
+					if (hour !== 0)
+						str.time += `${hour}시간 `;
+					if (minute !== 0)
+						str.time += `${minute}분 `;
+					// if (second !== 0)
+					// 	str.time += `${second}초 `;
+					// 초와 밀리초는 수행 시간에도 영향을 받고, 너무 세부적이므로 무시. 나중에 config 로 설정할 수 있게?
+					
+					if (str.time !== '')
+						str.time = str.time.trim() + ` ${sign}`;
+				}
+				else
+					str.time = this.toString("t h시 m분").replace(' 0분', '');
 			}
-			else
-				str.time = this.toString("t h시 m분").replace(' 0분', '');
 		}
 		
 		if (this.eq(now, true))
 			return '지금';
-		else if (isRelative)    // 상대적인 시간이면 최대 6시간 차이니까 날짜를 생략
+		else if (!ignoreTime && isRelative)    // 상대적인 시간이면 최대 6시간 차이니까 날짜를 생략
 			return str.time;
-		else if (str.date === '오늘' && str.time !== '')  // 오늘인데 시간이 있으면 날짜를 생략
+		else if (!ignoreTime && str.date === '오늘' && str.time !== '')  // 오늘인데 시간이 있으면 날짜를 생략
 			return str.time;
 		else
 			return `${str.date} ${str.time}`.trim();
@@ -715,7 +717,7 @@ class DateTime {
 	
 	static parseWithFilteredString(dateString, locale = 'ko-KR') {
 		const cultureInfo = IS_DIST
-			? JSON.parse(FileStream.read(`/sdcard/msgbot/global_modules/datetime/globalization/${locale}.json`))
+			? JSON.parse(FileStream.read(`${$}/globalization/${locale}.json`))
 			: require(`./globalization/${locale}.json`);
 		
 		if (!cultureInfo)
@@ -1076,7 +1078,7 @@ class DateTime {
 	// 	dateString = dateString.trim().replace(/\s+/g, ' ');
 	//
 	// 	const cultureInfo = IS_DIST
-	// 		? JSON.parse(FileStream.read(`/sdcard/msgbot/global_modules/datetime/globalization/${locale}.json`))
+	// 		? JSON.parse(FileStream.read(`${$}/globalization/${locale}.json`))
 	// 		: require(`./globalization/${locale}.json`);
 	//
 	// 	if (!cultureInfo)
@@ -1679,7 +1681,7 @@ class DateTime {
 	
 	static getWeekdayFromName(weekDayName, startOnMon = false, locale = 'ko-KR') {
 		const cultureInfo = IS_DIST
-			? JSON.parse(FileStream.read(`/sdcard/msgbot/global_modules/datetime/globalization/${locale}.json`))
+			? JSON.parse(FileStream.read(`${$}/globalization/${locale}.json`))
 			: require(`./globalization/${locale}.json`);
 		
 		if (!cultureInfo)

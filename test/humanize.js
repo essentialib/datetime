@@ -1,8 +1,10 @@
 const { DateTime } = require('../src');
 
 humanize = strings => console.log(DateTime.parse(strings[0]).humanize());
+humanizeIg = strings => console.log(DateTime.parse(strings[0]).humanize(true));
 
 humanize`내일 점심`
+humanizeIg`내일 6시간 후`
 // humanize`내일 정오`
 // humanize`내일 오후 3시`
 // humanize`내일 오후 3시 4분`

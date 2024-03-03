@@ -15,7 +15,8 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : String(i); }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-var IS_DIST = false;
+var IS_DIST = true;
+var $ = "/sdcard/msgbot/global_modules/datetime";
 var $D = !IS_DIST ? global.Date : Date;
 var Duration = /*#__PURE__*/function () {
   function Duration(millisecond) {
@@ -258,7 +259,7 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "weekdayName",
     get: function get() {
-      var cultureInfo = IS_DIST ? JSON.parse(FileStream.read("/sdcard/msgbot/global_modules/datetime/globalization/".concat(this.locale, ".json"))) : require("./globalization/".concat(this.locale, ".json"));
+      var cultureInfo = IS_DIST ? JSON.parse(FileStream.read("{$}/globalization/".concat(this.locale, ".json"))) : require("./globalization/".concat(this.locale, ".json"));
       if (!cultureInfo) throw new Error('Invalid locale, not found ' + this.locale);
       return cultureInfo['WW'][this.weekday];
     }
@@ -312,7 +313,7 @@ var DateTime = /*#__PURE__*/function () {
     value: function toString(formatString) {
       var _formatString,
         _this = this;
-      var cultureInfo = IS_DIST ? JSON.parse(FileStream.read("/sdcard/msgbot/global_modules/datetime/globalization/".concat(this.locale, ".json"))) : require("./globalization/".concat(this.locale, ".json"));
+      var cultureInfo = IS_DIST ? JSON.parse(FileStream.read("".concat($, "/globalization/").concat(this.locale, ".json"))) : require("./globalization/".concat(this.locale, ".json"));
       if (!cultureInfo) throw new Error('Invalid locale, not found ' + this.locale);
       formatString = (_formatString = formatString) !== null && _formatString !== void 0 ? _formatString : cultureInfo['formats']['full'];
       return formatString.replace(/ss?s?|mm?|hh?|ii?|t|DD?|WW?|MM?M?M?|YY(?:YY)?/g, function (match) {
@@ -365,6 +366,7 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "humanize",
     value: function humanize() {
+      var ignoreTime = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       var now = DateTime.now();
       var str = {
         date: '',
@@ -415,27 +417,29 @@ var DateTime = /*#__PURE__*/function () {
         else if (this.year === now.year) str.date = "".concat(this.month, "\uC6D4 ").concat(this.day, "\uC77C");else str.date = "".concat(this.year, "\uB144 ").concat(this.month, "\uC6D4 ").concat(this.day, "\uC77C");
       }
       var isRelative = false;
-      if (this.hour === 0 && this.minute === 0 && this.second === 0) str.time = ""; // '오늘 자정'은 마치 내일 0시를 말하는 것 같아서 그냥 '오늘'로 표시
-      else if (this.hour === 12 && this.minute === 0 && this.second === 0) str.time = "정오";else {
-        var sign = secDiff < 0 ? '전' : '후';
-        var amountSec = Math.abs(secDiff);
-        var hour = Math.floor(amountSec / 3600);
-        var minute = Math.floor(amountSec % 3600 / 60);
-        var second = amountSec % 60;
-        if (hour < 6) {
-          isRelative = true;
-          if (hour !== 0) str.time += "".concat(hour, "\uC2DC\uAC04 ");
-          if (minute !== 0) str.time += "".concat(minute, "\uBD84 ");
-          // if (second !== 0)
-          // 	str.time += `${second}초 `;
-          // 초와 밀리초는 수행 시간에도 영향을 받고, 너무 세부적이므로 무시. 나중에 config 로 설정할 수 있게?
+      if (!ignoreTime) {
+        if (this.hour === 0 && this.minute === 0 && this.second === 0) str.time = ""; // '오늘 자정'은 마치 내일 0시를 말하는 것 같아서 그냥 '오늘'로 표시
+        else if (this.hour === 12 && this.minute === 0 && this.second === 0) str.time = "정오";else {
+          var sign = secDiff < 0 ? '전' : '후';
+          var amountSec = Math.abs(secDiff);
+          var hour = Math.floor(amountSec / 3600);
+          var minute = Math.floor(amountSec % 3600 / 60);
+          var second = amountSec % 60;
+          if (hour < 6) {
+            isRelative = true;
+            if (hour !== 0) str.time += "".concat(hour, "\uC2DC\uAC04 ");
+            if (minute !== 0) str.time += "".concat(minute, "\uBD84 ");
+            // if (second !== 0)
+            // 	str.time += `${second}초 `;
+            // 초와 밀리초는 수행 시간에도 영향을 받고, 너무 세부적이므로 무시. 나중에 config 로 설정할 수 있게?
 
-          if (str.time !== '') str.time = str.time.trim() + " ".concat(sign);
-        } else str.time = this.toString("t h시 m분").replace(' 0분', '');
+            if (str.time !== '') str.time = str.time.trim() + " ".concat(sign);
+          } else str.time = this.toString("t h시 m분").replace(' 0분', '');
+        }
       }
-      if (this.eq(now, true)) return '지금';else if (isRelative)
+      if (this.eq(now, true)) return '지금';else if (!ignoreTime && isRelative)
         // 상대적인 시간이면 최대 6시간 차이니까 날짜를 생략
-        return str.time;else if (str.date === '오늘' && str.time !== '')
+        return str.time;else if (!ignoreTime && str.date === '오늘' && str.time !== '')
         // 오늘인데 시간이 있으면 날짜를 생략
         return str.time;else return "".concat(str.date, " ").concat(str.time).trim();
     }
@@ -747,7 +751,7 @@ var DateTime = /*#__PURE__*/function () {
     key: "parseWithFilteredString",
     value: function parseWithFilteredString(dateString) {
       var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ko-KR';
-      var cultureInfo = IS_DIST ? JSON.parse(FileStream.read("/sdcard/msgbot/global_modules/datetime/globalization/".concat(locale, ".json"))) : require("./globalization/".concat(locale, ".json"));
+      var cultureInfo = IS_DIST ? JSON.parse(FileStream.read("".concat($, "/globalization/").concat(locale, ".json"))) : require("./globalization/".concat(locale, ".json"));
       if (!cultureInfo) throw new Error('Invalid locale, not found ' + locale);
       var replaces = Object.entries(cultureInfo['replaces']);
       replaces.sort(function (a, b) {
@@ -1104,7 +1108,7 @@ var DateTime = /*#__PURE__*/function () {
     // 	dateString = dateString.trim().replace(/\s+/g, ' ');
     //
     // 	const cultureInfo = IS_DIST
-    // 		? JSON.parse(FileStream.read(`/sdcard/msgbot/global_modules/datetime/globalization/${locale}.json`))
+    // 		? JSON.parse(FileStream.read(`${$}/globalization/${locale}.json`))
     // 		: require(`./globalization/${locale}.json`);
     //
     // 	if (!cultureInfo)
@@ -1798,7 +1802,7 @@ var DateTime = /*#__PURE__*/function () {
     value: function getWeekdayFromName(weekDayName) {
       var startOnMon = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var locale = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'ko-KR';
-      var cultureInfo = IS_DIST ? JSON.parse(FileStream.read("/sdcard/msgbot/global_modules/datetime/globalization/".concat(locale, ".json"))) : require("./globalization/".concat(locale, ".json"));
+      var cultureInfo = IS_DIST ? JSON.parse(FileStream.read("".concat($, "/globalization/").concat(locale, ".json"))) : require("./globalization/".concat(locale, ".json"));
       if (!cultureInfo) throw new Error('Invalid locale, not found ' + locale);
       var W = cultureInfo['W'];
       var WW = cultureInfo['WW'];

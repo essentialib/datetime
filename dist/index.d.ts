@@ -152,7 +152,7 @@ export declare class DateTime {
 	
 	toString(formatString?: string): string;
 	
-	humanize(): string;
+	humanize(ignoreTime?: boolean): string;
 	
 	toNumber(): number;
 	
