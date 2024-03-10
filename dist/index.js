@@ -742,14 +742,78 @@ var DateTime = /*#__PURE__*/function () {
       return new DateTime(new $D(year, month - 1, day, hour, minute, second, millisecond));
     }
   }, {
+    key: "parseDuration",
+    value: function parseDuration(dateString) {
+      var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ko-KR';
+      return DateTime.parseDurationWithFilteredString(dateString, locale).parse;
+    }
+  }, {
     key: "parse",
     value: function parse(dateString) {
       var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ko-KR';
       return DateTime.parseWithFilteredString(dateString, locale).parse;
     }
   }, {
+    key: "parseDurationWithFilteredString",
+    value: function parseDurationWithFilteredString(dateString) {
+      var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ko-KR';
+      var split = dateString.split('부터');
+      if (split.length === 1) {
+        var parse = DateTime.parseWithFilteredString(dateString, locale);
+        return {
+          parse: {
+            from: parse.parse,
+            to: parse.parse
+          },
+          string: parse.string
+        };
+      }
+      var left = split[0].trim();
+      var right = split.slice(1).join('부터').trim();
+      var _DateTime$_parseWithF = DateTime._parseWithFilteredString(left, locale),
+        leftParse = _DateTime$_parseWithF.parse,
+        leftFString = _DateTime$_parseWithF.string;
+      var _DateTime$_parseWithF2 = DateTime._parseWithFilteredString(right, locale),
+        rightParse = _DateTime$_parseWithF2.parse,
+        rightFString = _DateTime$_parseWithF2.string;
+      var leftDT = leftParse == null ? null : DateTime.fromObject(leftParse);
+      var rightDT = rightParse == null ? null : DateTime.fromObject(rightParse);
+      if (leftDT != null && rightDT != null) {
+        // 내일 3시부터 4시까지 -> 그냥 번역하면 '내일 3시' ~ '오늘 4시' 가 되지만 사실은 '4시'는 '내일 4시'를 뜻함
+        if (!leftDT.lt(rightDT)) {
+          var rightDT_ = DateTime.fromObject(Object.assign(leftParse, rightParse));
+          if (leftDT.lt(rightDT_)) rightDT = rightDT_;
+          // 내일 9시부터 10시 -> '10시'는 오전으로 자동 해석되므로 만약 오후로 바꿨을 때 leftDT < rightDT 를 만족해 합당하다면 시도.
+          else if (rightDT_.hour < 12 && leftDT.lt(rightDT_.add({
+            hour: 12
+          }))) rightDT = rightDT_.add({
+            hour: 12
+          });else rightDT = leftDT;
+        }
+      }
+      return {
+        parse: {
+          from: leftDT,
+          to: rightDT
+        },
+        string: (leftFString + rightFString).replace(/\s+/g, ' ').trim()
+      };
+    }
+  }, {
     key: "parseWithFilteredString",
     value: function parseWithFilteredString(dateString) {
+      var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ko-KR';
+      var _DateTime$_parseWithF3 = DateTime._parseWithFilteredString(dateString, locale),
+        parse = _DateTime$_parseWithF3.parse,
+        string = _DateTime$_parseWithF3.string;
+      return {
+        parse: parse == null ? null : DateTime.fromObject(parse),
+        string: string
+      };
+    }
+  }, {
+    key: "_parseWithFilteredString",
+    value: function _parseWithFilteredString(dateString) {
       var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ko-KR';
       var cultureInfo = IS_DIST ? JSON.parse(FileStream.read("".concat($, "/globalization/").concat(locale, ".json"))) : require("./globalization/".concat(locale, ".json"));
       if (!cultureInfo) throw new Error('Invalid locale, not found ' + locale);
@@ -805,7 +869,8 @@ var DateTime = /*#__PURE__*/function () {
       var common_parse = function common_parse() {
         var _year, _month, _day2, _hour, _minute, _second, _millisecond;
         var year, month, day, hour, minute, second, millisecond;
-        var idx = -1;
+        var idx = -1; // ymd, md 등 정규식에 가장 뒤에서 걸린 것(인덱스의 최댓값)을 찾기 위한 변수
+
         var mix = {
           ymd: /*#__PURE__*/_wrapRegExp(/(\d{4})[-.\/] *(\d{1,2})[-.\/] *(\d{1,2})\.?/, {
             year: 1,
@@ -897,12 +962,13 @@ var DateTime = /*#__PURE__*/function () {
         if (millisecond != null) millisecond = parseInt(millisecond);
 
         // 보통 '3시'는 '오후 3시'로 해석되어야 함.
-        // 자동으로 오후로 해석되는 시간의 범위: 1시 ~ 9시
-        var meridian = 1 <= hour && hour <= 9 ? 'pm' : 'am';
+        // 자동으로 오후로 해석되는 시간의 범위: 1시 ~ 7시 59분
+        var meridian = 1 <= hour && hour < 8 ? 'pm' : 'am';
+        var i;
         if (dateString.indexOf('오전') !== -1) {
           filtering('오전');
           meridian = 'am';
-        } else if (dateString.indexOf('아침') < idx) {
+        } else if (0 <= (i = dateString.indexOf('아침')) && i < idx) {
           // 야침 9시 -> 오전 9시
           filtering('아침');
           meridian = 'am';
@@ -912,7 +978,7 @@ var DateTime = /*#__PURE__*/function () {
         } else if (dateString.indexOf('오후') !== -1) {
           filtering('오후');
           meridian = 'pm';
-        } else if (dateString.indexOf('저녁') < idx) {
+        } else if (0 <= (i = dateString.indexOf('저녁')) && i < idx) {
           filtering('저녁');
           meridian = 'pm';
         } else if (dateString.indexOf('pm') !== -1) {
@@ -1051,10 +1117,10 @@ var DateTime = /*#__PURE__*/function () {
         }
         return ret;
       };
-      filteredString = filteredString.replace(/ +/g, ' ');
+      filteredString = filteredString.replace(/\s+/g, ' ');
       var iso_parsed = iso_parse();
       if (iso_parsed !== undefined) return {
-        parse: DateTime.fromObject(iso_parsed),
+        parse: iso_parsed,
         string: filteredString.trim()
       };
       var common_parsed = common_parse();
@@ -1093,7 +1159,7 @@ var DateTime = /*#__PURE__*/function () {
         else if (common_parsed[unit] || relative_parsed[unit]) parsed[unit] = (_common_parsed$unit = common_parsed[unit]) !== null && _common_parsed$unit !== void 0 ? _common_parsed$unit : relative_parsed[unit];
       }
       return {
-        parse: DateTime.fromObject(parsed),
+        parse: parsed,
         string: filteredString.trim()
       };
     }

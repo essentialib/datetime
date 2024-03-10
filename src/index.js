@@ -154,7 +154,7 @@ class DateTime {
 		if (datetimeObject instanceof $D) {
 			this._source = datetimeObject;
 		}
-		else if (datetimeObject !== undefined) {
+		else if (datetimeObject != null) {
 			let dt;
 			
 			if (datetimeObject instanceof DateTime)
@@ -711,11 +711,63 @@ class DateTime {
 		return new DateTime(new $D(year, month - 1, day, hour, minute, second, millisecond));
 	}
 	
+	static parseDuration(dateString, locale = 'ko-KR') {
+		return DateTime.parseDurationWithFilteredString(dateString, locale).parse;
+	}
+	
 	static parse(dateString, locale = 'ko-KR') {
 		return DateTime.parseWithFilteredString(dateString, locale).parse;
 	}
 	
+	static parseDurationWithFilteredString(dateString, locale = 'ko-KR') {
+		let split = dateString.split('부터');
+		
+		if (split.length === 1) {
+			let parse = DateTime.parseWithFilteredString(dateString, locale);
+			return {
+				parse: {
+					from: parse.parse,
+					to: parse.parse
+				},
+				string: parse.string
+			};
+		}
+		
+		let left = split[0].trim();
+		let right = split.slice(1).join('부터').trim();
+		
+		let { parse: leftParse, string: leftFString } = DateTime._parseWithFilteredString(left, locale);
+		let { parse: rightParse, string: rightFString } = DateTime._parseWithFilteredString(right, locale);
+		
+		let leftDT = leftParse == null ? null : DateTime.fromObject(leftParse);
+		let rightDT = rightParse == null ? null : DateTime.fromObject(rightParse);
+		
+		if (leftDT != null && rightDT != null) {
+			// 내일 3시부터 4시까지 -> 그냥 번역하면 '내일 3시' ~ '오늘 4시' 가 되지만 사실은 '4시'는 '내일 4시'를 뜻함
+			if (!leftDT.lt(rightDT)) {
+				let rightDT_ = DateTime.fromObject(Object.assign(leftParse, rightParse));
+				if (leftDT.lt(rightDT_))
+					rightDT = rightDT_;
+				// 내일 9시부터 10시 -> '10시'는 오전으로 자동 해석되므로 만약 오후로 바꿨을 때 leftDT < rightDT 를 만족해 합당하다면 시도.
+				else if (rightDT_.hour < 12 && leftDT.lt(rightDT_.add({ hour: 12 })))
+					rightDT = rightDT_.add({ hour: 12 });
+				else
+					rightDT = leftDT;
+			}
+		}
+		
+		return {
+			parse: { from: leftDT, to: rightDT },
+			string: (leftFString + rightFString).replace(/\s+/g, ' ').trim()
+		};
+	}
+	
 	static parseWithFilteredString(dateString, locale = 'ko-KR') {
+		let { parse, string } = DateTime._parseWithFilteredString(dateString, locale);
+		return { parse: parse == null ? null : DateTime.fromObject(parse), string: string };
+	}
+	
+	static _parseWithFilteredString(dateString, locale = 'ko-KR') {
 		const cultureInfo = IS_DIST
 			? JSON.parse(FileStream.read(`${$}/globalization/${locale}.json`))
 			: require(`./globalization/${locale}.json`);
@@ -763,7 +815,7 @@ class DateTime {
 		
 		const common_parse = () => {
 			let year, month, day, hour, minute, second, millisecond;
-			let idx = -1;
+			let idx = -1;   // ymd, md 등 정규식에 가장 뒤에서 걸린 것(인덱스의 최댓값)을 찾기 위한 변수
 			
 			const mix = {
 				ymd: /(?<year>\d{4})[-.\/] *(?<month>\d{1,2})[-.\/] *(?<day>\d{1,2})\.?/,
@@ -861,14 +913,15 @@ class DateTime {
 				millisecond = parseInt(millisecond);
 			
 			// 보통 '3시'는 '오후 3시'로 해석되어야 함.
-			// 자동으로 오후로 해석되는 시간의 범위: 1시 ~ 9시
-			let meridian = (1 <= hour && hour <= 9) ? 'pm' : 'am';
+			// 자동으로 오후로 해석되는 시간의 범위: 1시 ~ 7시 59분
+			let meridian = (1 <= hour && hour < 8) ? 'pm' : 'am';
 			
+			let i;
 			if (dateString.indexOf('오전') !== -1) {
 				filtering('오전');
 				meridian = 'am';
 			}
-			else if (dateString.indexOf('아침') < idx) {  // 야침 9시 -> 오전 9시
+			else if (0 <= (i = dateString.indexOf('아침')) && i < idx) {  // 야침 9시 -> 오전 9시
 				filtering('아침');
 				meridian = 'am';
 			}
@@ -880,7 +933,7 @@ class DateTime {
 				filtering('오후');
 				meridian = 'pm';
 			}
-			else if (dateString.indexOf('저녁') < idx) {
+			else if (0 <= (i = dateString.indexOf('저녁')) && i < idx) {
 				filtering('저녁');
 				meridian = 'pm';
 			}
@@ -889,7 +942,7 @@ class DateTime {
 				meridian = 'pm';
 			}
 			
-			if (hour !== undefined && hour < 12 && meridian === 'pm')
+			if (hour != null && hour < 12 && meridian === 'pm')
 				hour += 12;
 			
 			const now = DateTime.now();
@@ -924,19 +977,19 @@ class DateTime {
 			
 			let ret = {};
 			
-			if (year !== undefined)
+			if (year != null)
 				ret.year = year;
-			if (month !== undefined)
+			if (month != null)
 				ret.month = month;
-			if (day !== undefined)
+			if (day != null)
 				ret.day = day;
-			if (hour !== undefined)
+			if (hour != null)
 				ret.hour = hour;
-			if (minute !== undefined)
+			if (minute != null)
 				ret.minute = minute;
-			if (second !== undefined)
+			if (second != null)
 				ret.second = second;
-			if (millisecond !== undefined)
+			if (millisecond != null)
 				ret.millisecond = millisecond;
 			
 			return ret;
@@ -968,9 +1021,9 @@ class DateTime {
 			
 			// 'n<단위> 후'는 단위가 변경되고 나머지는 현재 시간을 따름. 3시간 후 -> 3시간 후 현재시간
 			arr2 = RE_RELATIVE_END.exec(dateString);
-			if (arr2 !== null) {
+			if (arr2 != null) {
 				filtering(arr2[0]);
-				while ((arr = RE_RELATIVE.exec(dateString)) !== null) {
+				while ((arr = RE_RELATIVE.exec(dateString)) != null) {
 					filtering(arr[0]);
 					
 					let key = unitMap[arr.groups.unit];
@@ -988,7 +1041,7 @@ class DateTime {
 			}
 			
 			// '다음 <단위>'는 단위만 변경되면 나머지는 초기화임. 다음 시간 -> 다음 시간 0분 0초
-			while ((arr = RE_RELATIVE2.exec(dateString)) !== null) {
+			while ((arr = RE_RELATIVE2.exec(dateString)) != null) {
 				filtering(arr[0]);
 				
 				// 다다다다음 -> 다음 * 4
@@ -1004,7 +1057,7 @@ class DateTime {
 			
 			// 일월화수목금토가 일주일이라고 하면 현재가 수요일일 때, 다음주 일요일은 5일 후. 그러나 평상시는 이 날을 그냥 이번주 일요일이라고 함.
 			// 즉 현실에 맞게 일주일을 조금 다르게 대응시킴.
-			if ((arr = RE_WEEKDAY.exec(dateString)) !== null) {
+			if ((arr = RE_WEEKDAY.exec(dateString)) != null) {
 				if (arr.index === 0 || /[^0-9요]+/.test(dateString.slice(0, arr.index))) {
 					// /(?<=[^0-9요]+|^)(?<week>[일월화수목금토])요일(?= +|$)/ 에서 후방탐색연산자 사용이 안되어서 이렇게 대신함
 					
@@ -1023,11 +1076,11 @@ class DateTime {
 			return ret;
 		};
 		
-		filteredString = filteredString.replace(/ +/g, ' ');
+		filteredString = filteredString.replace(/\s+/g, ' ');
 		
 		const iso_parsed = iso_parse();
-		if (iso_parsed !== undefined)
-			return { parse: DateTime.fromObject(iso_parsed), string: filteredString.trim() };
+		if (iso_parsed != null)
+			return { parse: iso_parsed, string: filteredString.trim() };
 		
 		const common_parsed = common_parse();
 		const relative_parsed = relative_parse();
@@ -1041,7 +1094,7 @@ class DateTime {
 		// '3월 4일' 이라고 하면 '현재년도 3월 4일 0시 0분 0초'로 해석되어야 함. 즉, 마지막으로 데이터가 존재하는 unit 까지만 현재 날짜로 지정.
 		let lastIndex = -1;
 		for (let i = units.length - 1; i >= 0; i--) {
-			if (relative_parsed[units[i]] !== undefined) {
+			if (relative_parsed[units[i]] != null) {
 				lastIndex = i;
 				break;
 			}
@@ -1065,7 +1118,7 @@ class DateTime {
 				parsed[unit] = common_parsed[unit] ?? relative_parsed[unit];
 		}
 		
-		return { parse: DateTime.fromObject(parsed), string: filteredString.trim() };
+		return { parse: parsed, string: filteredString.trim() };
 	}
 	
 	// static parse(dateString, locale = 'ko-KR') {
@@ -1098,7 +1151,7 @@ class DateTime {
 	// 		standard: new Set([ 'from', 'of' ]),
 	// 	};
 	//
-	// 	const homonyms = new Set(Object.keys(cultureInfo.translate).map(k => isHomonymObject(cultureInfo.translate[k]) ? k : null).filter(e => e !== null));
+	// 	const homonyms = new Set(Object.keys(cultureInfo.translate).map(k => isHomonymObject(cultureInfo.translate[k]) ? k : null).filter(e => e != null));
 	//
 	// 	// 1. parse ISO 8601 format
 	// 	const parse1 = () => {
@@ -1142,7 +1195,7 @@ class DateTime {
 	// 			let second = timeMatch?.groups?.second;
 	// 			let millisecond = timeMatch?.groups?.millisecond;
 	//
-	// 			if (hour !== undefined && hour < 12 && meridiem === 'pm')
+	// 			if (hour != null && hour < 12 && meridiem === 'pm')
 	// 				hour += 12;
 	//
 	// 			return { year, month, day, hour, minute, second, millisecond };
@@ -1273,7 +1326,7 @@ class DateTime {
 	// 					else if (isRelativeObject(tokens[j]))
 	// 						diff = tokens[j].diff * multiplier;
 	//
-	// 					if (diff !== undefined)
+	// 					if (diff != null)
 	// 						tokens[j] = { diff };
 	// 				}
 	//
@@ -1535,12 +1588,12 @@ class DateTime {
 	//
 	// 	let parsed = parse1() ?? parse2();
 	//
-	// 	if (parsed !== undefined)
+	// 	if (parsed != null)
 	// 		return [ parsed, undefined ];
 	// 	else {
 	// 		let parsed = parse3();
 	//
-	// 		if (parsed !== undefined)
+	// 		if (parsed != null)
 	// 			return parsed;
 	// 		else
 	// 			throw new Error('Invalid date string: ' + dateString);

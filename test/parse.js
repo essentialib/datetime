@@ -6,6 +6,12 @@ parse = string => {
 	console.log(parsed.toString('YYYY-MM-DD t hh:mm:ss.sss WW'));
 };
 
+parseDuration = string => {
+	console.log(string[0]);
+	const parsed = DateTime.parseDuration(string[0]);
+	console.log(`${parsed.from} ~ ${parsed.to}`);
+}
+
 // parse`새벽 3시`    // ✅
 // parse`오전 4시`    // ✅
 // parse`오후 7:15`  // ✅
@@ -35,6 +41,7 @@ parse = string => {
 // parse`1년 후` // ✅
 // parse`다음 주 일요일` // ✅, 주일을 일월화수목금토 가 아니라 월화수목금토일 로 해서 '다음 주 일요일'을 보다 평상시 표현으로 사용할 수 있게 함.
 // parse`저번 주 일요일`  // ✅
+parse`다음 주 월요일`
 // parse`다다음 주`    // ✅
 // parse`다다음 주 일요일`    // ✅
 // parse`일요일`  // ✅
@@ -70,4 +77,9 @@ parse = string => {
 // parse`저녁`    // ✅
 // parse`자정`    // ✅
 
-parse`아침 9시`;
+// parse`7시`;   // ✅
+// parse`8시`;   // ✅
+// parse`9시`;   // ✅
+// parse`12시`;  // ✅
+
+// parseDuration`이번 주부터 다음 주`; // ✅

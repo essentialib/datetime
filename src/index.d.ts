@@ -198,9 +198,21 @@ export declare class DateTime {
 	
 	static set(datetimeObject: SetDateTimeTemplate): DateTime;
 	
+	static parseDuration(dateString: string, locale?: string): { from: DateTime | undefined, to: DateTime | undefined };
+	
 	static parse(dateString: string, locale?: string): DateTime | undefined;
 	
-	static parseWithFilteredString(dateString: string, locale?: string): { parse: DateTime | undefined, string: string };
+	static parseDurationWithFilteredString(dateString: string, locale?: string): {
+		parse: {
+			from: DateTime | undefined,
+			to: DateTime | undefined
+		}, string: string
+	};
+	
+	static parseWithFilteredString(dateString: string, locale?: string): {
+		parse: DateTime | undefined,
+		string: string
+	};
 	
 	// private static _parse(dateString: string, locale?: string): [ SetDateTimeTemplate, string? ];
 	

@@ -68,3 +68,5 @@ const { DateTime, Date, Time, $D } = require('../src');
 //
 // for (let year of years)
 // 	console.log(DateTime.leapYearCount(year[0], year[1]));
+
+console.log(DateTime.today().toString('M월 D일'), DateTime.sunday().toString('M월 D일'));
