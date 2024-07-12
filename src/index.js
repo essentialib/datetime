@@ -1,18 +1,24 @@
 // importClass(java.io.File);
 
 const IS_DIST = false;
-
 const $D = !IS_DIST ? global.Date : Date;
 
-const getCultureInfo = locale => {
-	let ret = IS_DIST
-		? JSON.parse(FileStream.read(`${android.os.Environment.getExternalStorageDirectory().getAbsolutePath()}/msgbot/global_modules/BotOperator/DateTime/globalization/${locale}.json`))
-		: require(`./globalization/${locale}.json`);
-
-	if (ret == null)
-		throw Error(`Invalid Locale ${locale}. (${android.os.Environment.getExternalStorageDirectory().getAbsolutePath()}/msgbot/global_modules/BotOperator/DateTime/globalization/${locale}.json is not exist)`);
-
-	return ret;
+const getCultureInfo = (locale, globalizationPath) => {
+	if (IS_DIST) {
+		const localePath = android.os.Environment.getExternalStorageDirectory().
+			                   getAbsolutePath() + '/' + globalizationPath + `/${locale}.json`;
+		
+		let ret = JSON.parse(FileStream.read(localePath));
+		
+		if (ret == null) {
+			throw Error(`Invalid Locale ${locale}. (${localePath} is not exist)`);
+		}
+		
+		return ret;
+	}
+	else {
+		return require(`./globalization/${locale}.json`);
+	}
 };
 
 class Duration {
@@ -63,13 +69,18 @@ class Date {
 	}
 	
 	eq(dateObject) {
-		const { year, month, day } = dateObject;
+		const {
+			year,
+			month,
+			day,
+		} = dateObject;
 		return this.year === year && this.month === month && this.day === day;
 	}
 	
 	subtract(dateObject) {
-		if (dateObject instanceof Date)
+		if (dateObject instanceof Date) {
 			return new Duration(this._source.getTime() - dateObject._source.getTime());
+		}
 		else if (dateObject instanceof Duration) {
 			let dt = new $D(this._source);
 			dt.setMilliseconds(dt.getMilliseconds() - dateObject.amount);
@@ -92,7 +103,7 @@ class Date {
 		return {
 			year: this.year,
 			month: this.month,
-			day: this.day
+			day: this.day,
 		};
 	}
 }
@@ -123,13 +134,20 @@ class Time {
 	}
 	
 	eq(timeObject) {
-		const { hour, minute, second, millisecond } = timeObject;
-		return this.hour === hour && this.minute === minute && this.second === second && this.millisecond === millisecond;
+		const {
+			hour,
+			minute,
+			second,
+			millisecond,
+		} = timeObject;
+		return this.hour === hour && this.minute === minute && this.second === second && this.millisecond ===
+		       millisecond;
 	}
 	
 	subtract(timeObject) {
-		if (timeObject instanceof Time)
+		if (timeObject instanceof Time) {
 			return new Duration(this._source.getTime() - timeObject._source.getTime());
+		}
 		else if (timeObject instanceof Duration) {
 			let dt = new $D(this._source);
 			dt.setMilliseconds(dt.getMilliseconds() - timeObject.amount);
@@ -154,15 +172,18 @@ class Time {
 			hour: this.hour,
 			minute: this.minute,
 			second: this.second,
-			millisecond: this.millisecond
+			millisecond: this.millisecond,
 		};
 	}
 }
 
 class DateTime {
-	constructor(datetimeObject, locale) {
+	static globalizationPath = 'msgbot/global_modules/DateTime/globalization';
+	
+	constructor(datetimeObject, locale = 'ko-KR', globalizationPath = DateTime.globalizationPath) {
 		this._source = new $D();
 		this._locale = locale ?? 'ko-KR';
+		this._globalizationPath = globalizationPath ?? DateTime.globalizationPath;
 		
 		if (datetimeObject instanceof $D) {
 			this._source = datetimeObject;
@@ -170,16 +191,21 @@ class DateTime {
 		else if (datetimeObject != null) {
 			let dt;
 			
-			if (datetimeObject instanceof DateTime)
+			if (datetimeObject instanceof DateTime) {
 				dt = datetimeObject;
-			else if (typeof datetimeObject === 'number')
+			}
+			else if (typeof datetimeObject === 'number') {
 				dt = DateTime.fromNumber(datetimeObject);
-			else if (typeof datetimeObject === 'object' && !Array.isArray(datetimeObject))
+			}
+			else if (typeof datetimeObject === 'object' && !Array.isArray(datetimeObject)) {
 				dt = DateTime.fromObject(datetimeObject);
-			else if (typeof datetimeObject === 'string')
+			}
+			else if (typeof datetimeObject === 'string') {
 				dt = DateTime.fromString(datetimeObject, this._locale);
-			else
+			}
+			else {
 				throw new TypeError('`datetimeObject` must be $D, datetime, number, object, or string');
+			}
 			
 			this._source = dt._source;
 			this._locale = dt._locale;
@@ -191,8 +217,9 @@ class DateTime {
 	}
 	
 	set date(dateObject) {
-		if (!(dateObject instanceof Date))
+		if (!(dateObject instanceof Date)) {
 			throw new TypeError('`date` must be date');
+		}
 		
 		this._source.setFullYear(dateObject.year ?? this._source.getFullYear());
 		this._source.setMonth((dateObject.month - 1) ?? this._source.getMonth());
@@ -200,12 +227,14 @@ class DateTime {
 	}
 	
 	get time() {
-		return new Time(this._source.getHours(), this._source.getMinutes(), this._source.getSeconds(), this._source.getMilliseconds());
+		return new Time(this._source.getHours(), this._source.getMinutes(), this._source.getSeconds(),
+			this._source.getMilliseconds());
 	}
 	
 	set time(timeObject) {
-		if (!(timeObject instanceof Time))
+		if (!(timeObject instanceof Time)) {
 			throw new TypeError('`time` must be time');
+		}
 		
 		this._source.setHours(timeObject.hour ?? this._source.getHours());
 		this._source.setMinutes(timeObject.minute ?? this._source.getMinutes());
@@ -242,7 +271,7 @@ class DateTime {
 	}
 	
 	get weekdayName() {
-		return getCultureInfo(this.locale)['WW'][this.weekday];
+		return getCultureInfo(this.locale, this.globalizationPath)['WW'][this.weekday];
 	}
 	
 	get hour() {
@@ -285,12 +314,21 @@ class DateTime {
 		this._locale = value;
 	}
 	
+	get globalizationPath() {
+		return this._globalizationPath;
+	}
+	
+	set globalizationPath(value) {
+		this._globalizationPath = value;
+		DateTime.globalizationPath = value;
+	}
+	
 	timestamp() {
 		return this._source.getTime();
 	}
 	
 	toString(formatString) {
-		const cultureInfo = getCultureInfo(this.locale);
+		const cultureInfo = getCultureInfo(this.locale, this.globalizationPath);
 		
 		formatString = formatString ?? cultureInfo['formats']['full'];
 		return formatString.replace(/ss?s?|mm?|hh?|ii?|t|DD?|WW?|MM?M?M?|YY(?:YY)?/g, match => {
@@ -345,8 +383,8 @@ class DateTime {
 		const now = DateTime.now();
 		const str = {
 			date: '',
-			time: ''
-		}
+			time: '',
+		};
 		
 		let dayDiff = this.date.subtract(now.date).day;
 		let secDiff = Math.ceil(this.subtract(now).amount / 1000);
@@ -360,7 +398,7 @@ class DateTime {
 		
 		let isSpecial = false;
 		for (let i = -2; i <= 2; i++) {
-			const dt = now.add({ day: i });
+			const dt = now.add({day: i});
 			if (this.date.eq(dt.date)) {
 				str.date = specials[i];
 				isSpecial = true;
@@ -373,14 +411,18 @@ class DateTime {
 			const nextWeekSunDiff = 13 - nowWeekday;  // 다음 주 일요일까지의 날짜 차이
 			
 			if (lastWeekMonDiff <= dayDiff && dayDiff <= nextWeekSunDiff) {   // 저번 주 ~ 다음 주
-				if (dayDiff - lastWeekMonDiff < 7)
+				if (dayDiff - lastWeekMonDiff < 7) {
 					str.date = `지난 주 ${this.weekdayName}`;
-				else if (nextWeekSunDiff - dayDiff < 7)
+				}
+				else if (nextWeekSunDiff - dayDiff < 7) {
 					str.date = `다음 주 ${this.weekdayName}`;
-				else if (dayDiff < 0)
-					str.date = `이번 주 ${this.weekdayName}`;  // 이번 주의 지나간 요일은 '이번 주' 포함
-				else
-					str.date = this.weekdayName;    // 이번 주의 아직 지나지 않은 요일은 '이번 주' 생략
+				}
+				else if (dayDiff < 0) {
+					str.date = `이번 주 ${this.weekdayName}`;
+				}// 이번 주의 지나간 요일은 '이번 주' 포함
+				else {
+					str.date = this.weekdayName;
+				}    // 이번 주의 아직 지나지 않은 요일은 '이번 주' 생략
 			}
 				// else if (this.year === now.year && this.month === now.month) {    // 저번 주 ~ 다음 주의 범위를 벗어나면서 달은 같은 경우
 				// 	const week = dayDiff < 0 ? Math.ceil(dayDiff / 7) : Math.floor(dayDiff / 7);
@@ -395,18 +437,22 @@ class DateTime {
 				//
 				// 	str.date = ret.join(' ') + (dayDiff < 0 ? ' 전' : ' 후');
 			// }
-			else if (this.year === now.year)
+			else if (this.year === now.year) {
 				str.date = `${this.month}월 ${this.day}일`;
-			else
+			}
+			else {
 				str.date = `${this.year}년 ${this.month}월 ${this.day}일`;
+			}
 		}
 		
 		let isRelative = false;
 		if (!ignoreTime) {
-			if (this.hour === 0 && this.minute === 0 && this.second === 0)
-				str.time = "";  // '오늘 자정'은 마치 내일 0시를 말하는 것 같아서 그냥 '오늘'로 표시
-			else if (this.hour === 12 && this.minute === 0 && this.second === 0)
-				str.time = "정오";
+			if (this.hour === 0 && this.minute === 0 && this.second === 0) {
+				str.time = '';
+			}// '오늘 자정'은 마치 내일 0시를 말하는 것 같아서 그냥 '오늘'로 표시
+			else if (this.hour === 12 && this.minute === 0 && this.second === 0) {
+				str.time = '정오';
+			}
 			else {
 				const sign = secDiff < 0 ? '전' : '후';
 				const amountSec = Math.abs(secDiff);
@@ -417,30 +463,45 @@ class DateTime {
 				if (amountSec < 6 * 60 * 60) {	// 6시간 이내
 					isRelative = true;
 					
-					if (hour !== 0)
+					if (hour !== 0) {
 						str.time += `${hour}시간 `;
-					if (minute !== 0)
+					}
+					if (minute !== 0) {
 						str.time += `${minute}분 `;
-					if (second !== 0)
+					}
+					if (second !== 0) {
 						str.time += `${second}초 `;
+					}
 					// 밀리초는 수행 시간에도 영향을 받고, 너무 세부적이므로 무시. 나중에 config 로 설정할 수 있게?
 					
-					if (str.time !== '')
+					if (str.time !== '') {
 						str.time = str.time.trim() + ` ${sign}`;
+					}
 				}
-				else
-					str.time = this.toString("t h시 m분 s초").replace('0초', '').replace('0분', '').replace(/\s+/g, ' ').trimEnd();
+				else {
+					str.time = this.toString('t h시 m분 s초').
+						replace(' 0초', '').
+						replace(' 0분', '').
+						replace(/\s+/g, ' ').
+						trimEnd();
+				}
 			}
 		}
 		
-		if (!ignoreTime && this.eq(now, true))
+		if (!ignoreTime && this.eq(now, true)) {
 			return '지금';
+		}
 		else if (!ignoreTime && isRelative)    // 상대적인 시간이면 최대 6시간 차이니까 날짜를 생략
+		{
 			return str.time;
+		}
 		else if (!ignoreTime && str.date === '오늘' && str.time !== '')  // 오늘인데 시간이 있으면 날짜를 생략
+		{
 			return str.time;
-		else
+		}
+		else {
 			return `${str.date} ${str.time}`.trim();
+		}
 	}
 	
 	toNumber() {
@@ -460,7 +521,7 @@ class DateTime {
 			hour: this.hour,
 			minute: this.minute,
 			second: this.second,
-			millisecond: this.millisecond
+			millisecond: this.millisecond,
 		};
 	}
 	
@@ -468,15 +529,22 @@ class DateTime {
 		return DateTime.fromNumber(timestamp);
 	}
 	
-	static fromString(dateString, useDuration = false, getString = false, filterIncludeEnding = true, trim = true, std = DateTime.now(), locale = 'ko-KR') {
-		return DateTime.dehumanize(dateString, useDuration, getString, filterIncludeEnding, trim, std, locale);
+	static fromString(dateString, useDuration = false, getString = false, filterIncludeEnding = true, trim = true,
+		std = DateTime.now(), locale = 'ko-KR',
+		globalizationPath = DateTime.globalizationPath) {
+		return DateTime.dehumanize(dateString, useDuration, getString, filterIncludeEnding, trim, std, locale,
+			globalizationPath);
 	}
 	
-	static dehumanize(dateString, useDuration = false, getString = false, filterIncludeEnding = true, trim = true, std = DateTime.now(), locale = 'ko-KR') {
-		if (useDuration)
-			return DateTime.parseDuration(dateString, getString, filterIncludeEnding, std, locale);
-		else
-			return DateTime.parse(dateString, getString, filterIncludeEnding, trim, std, locale);
+	static dehumanize(dateString, useDuration = false, getString = false, filterIncludeEnding = true, trim = true,
+		std = DateTime.now(), locale = 'ko-KR',
+		globalizationPath = DateTime.globalizationPath) {
+		if (useDuration) {
+			return DateTime.parseDuration(dateString, getString, filterIncludeEnding, std, locale, globalizationPath);
+		}
+		else {
+			return DateTime.parse(dateString, getString, filterIncludeEnding, trim, std, locale, globalizationPath);
+		}
 	}
 	
 	static fromNumber(timestamp) {
@@ -509,10 +577,11 @@ class DateTime {
 			hour: (standard ? (standard.hour ?? now.hour) : 0),
 			minute: (standard ? (standard.minute ?? now.minute) : 0),
 			second: (standard ? (standard.second ?? now.second) : 0),
-			millisecond: (standard ? (standard.millisecond ?? now.millisecond) : 0)
-		}
+			millisecond: (standard ? (standard.millisecond ?? now.millisecond) : 0),
+		};
 		
-		const units = [ 'year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond' ];
+		const units = [
+			'year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond'];
 		
 		/**
 		 * "오전 6시" 는 year, month, day는 현재 or 기준(standard)으로, hour는 6, minute, second, millisecond는 0으로 정해지는 것이 합당하다.
@@ -523,11 +592,9 @@ class DateTime {
 		for (let unit of units) {
 			if (ret[unit] != null) {
 				let x = units.indexOf(unit);
-
-				for (let i = 0; i < x; i++)
-					ret[units[i]] ??= (standard ?? now)[units[i]];
-				for (let i = x; i < units.length; i++)
-					ret[units[i]] ??= defaults[units[i]];
+				
+				for (let i = 0; i < x; i++) ret[units[i]] ??= (standard ?? now)[units[i]];
+				for (let i = x; i < units.length; i++) ret[units[i]] ??= defaults[units[i]];
 				
 				find = true;
 				break;
@@ -564,8 +631,9 @@ class DateTime {
 			ret.second = ret.second >= 0 ? Math.floor(ret.second) : Math.ceil(ret.second);
 		}
 		
-		if (ret.millisecond % 1 !== 0)
+		if (ret.millisecond % 1 !== 0) {
 			throw new Error('millisecond must be integer');
+		}
 		
 		return DateTime.set(ret);
 	}
@@ -591,8 +659,9 @@ class DateTime {
 	}
 	
 	subtract(datetimeObject) {
-		if (datetimeObject instanceof DateTime)
+		if (datetimeObject instanceof DateTime) {
 			return new Duration(this.timestamp() - datetimeObject.timestamp());
+		}
 		else if (datetimeObject instanceof Duration) {
 			let dt = this.toDate();
 			dt.setMilliseconds(dt.getMilliseconds() - datetimeObject.amount);
@@ -628,29 +697,37 @@ class DateTime {
 			this.millisecond = datetimeObject.millisecond;
 		}
 		else {
-			if (datetimeObject.year != null)
+			if (datetimeObject.year != null) {
 				this.year = datetimeObject.year;
-			if (datetimeObject.month != null)
+			}
+			if (datetimeObject.month != null) {
 				this.month = datetimeObject.month;
-			if (datetimeObject.day != null)
+			}
+			if (datetimeObject.day != null) {
 				this.day = datetimeObject.day;
-			if (datetimeObject.hour != null)
+			}
+			if (datetimeObject.hour != null) {
 				this.hour = datetimeObject.hour;
-			if (datetimeObject.minute != null)
+			}
+			if (datetimeObject.minute != null) {
 				this.minute = datetimeObject.minute;
-			if (datetimeObject.second != null)
+			}
+			if (datetimeObject.second != null) {
 				this.second = datetimeObject.second;
-			if (datetimeObject.millisecond != null)
+			}
+			if (datetimeObject.millisecond != null) {
 				this.millisecond = datetimeObject.millisecond;
+			}
 		}
 		
 		return this;
 	}
 	
 	eq(datetimeObject, ignoreMillisecond = false) {
-		if (datetimeObject.constructor === Object)
+		if (datetimeObject.constructor === Object) {
 			datetimeObject = DateTime.fromObject(datetimeObject, this);
-
+		}
+		
 		if (ignoreMillisecond) {
 			const other = new DateTime(datetimeObject, this.locale);
 			return this.timestamp() - this.millisecond === other.timestamp() - other.millisecond;
@@ -666,33 +743,37 @@ class DateTime {
 	}
 	
 	ge(datetimeObject) {
-		if (datetimeObject.constructor === Object)
+		if (datetimeObject.constructor === Object) {
 			datetimeObject = DateTime.fromObject(datetimeObject, this);
-
+		}
+		
 		const other = new DateTime(datetimeObject, this.locale);
 		return this.timestamp() >= other.timestamp();
 	}
 	
 	gt(datetimeObject) {
-		if (datetimeObject.constructor === Object)
+		if (datetimeObject.constructor === Object) {
 			datetimeObject = DateTime.fromObject(datetimeObject, this);
-
+		}
+		
 		const other = new DateTime(datetimeObject, this.locale);
 		return this.timestamp() > other.timestamp();
 	}
 	
 	le(datetimeObject) {
-		if (datetimeObject.constructor === Object)
+		if (datetimeObject.constructor === Object) {
 			datetimeObject = DateTime.fromObject(datetimeObject, this);
-
+		}
+		
 		const other = new DateTime(datetimeObject, this.locale);
 		return this.timestamp() <= other.timestamp();
 	}
 	
 	lt(datetimeObject) {
-		if (datetimeObject.constructor === Object)
+		if (datetimeObject.constructor === Object) {
 			datetimeObject = DateTime.fromObject(datetimeObject, this);
-
+		}
+		
 		const other = new DateTime(datetimeObject, this.locale);
 		return this.timestamp() < other.timestamp();
 	}
@@ -728,9 +809,10 @@ class DateTime {
 		
 		return new DateTime(new $D(year, month - 1, day, hour, minute, second, millisecond));
 	}
-
-	static _parse(dateString, getString = false, filterIncludeEnding = true, trim = true, std = DateTime.now(), locale = 'ko-KR') {
-		const cultureInfo = getCultureInfo(locale);
+	
+	static _parse(dateString, getString = false, filterIncludeEnding = true, trim = true, std = DateTime.now(),
+		locale = 'ko-KR', globalizationPath = DateTime.globalizationPath) {
+		const cultureInfo = getCultureInfo(locale, globalizationPath);
 		
 		const replaces = Object.entries(cultureInfo['replaces']);
 		replaces.sort((a, b) => b[0].length - a[0].length); // '내일모레'와 '모레'가 모두 매칭되는 경우, '내일모레'가 먼저 매칭되도록 함.
@@ -744,12 +826,13 @@ class DateTime {
 			return `${direction[0].repeat(count + offset)}${direction[1]} 날`;
 		});
 		dateString = dateString.replace(/(저+)번/g, (_, countStr) => `${'지'.repeat(countStr.length)}난`);
-		replaces.forEach(([ key, value ]) => {
+		replaces.forEach(([key, value]) => {
 			dateString = dateString.replace(new RegExp(key, 'g'), value);
 		});
 		
 		let filteredString = dateString;
-		const filtering = value => filteredString = filteredString.replace(new RegExp(value + (filterIncludeEnding ? '\\S*' : '')), '');
+		const filtering = value => filteredString =
+			filteredString.replace(new RegExp(value + (filterIncludeEnding ? '\\S*' : '')), '');
 		
 		const iso_parse = () => {
 			const RE_ISO = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{3}))?Z$/;
@@ -757,10 +840,18 @@ class DateTime {
 			
 			if (isoMatch) {
 				filtering(isoMatch[0]);
-
-				let [ year, month, day, hour, minute, second, millisecond ] = isoMatch.slice(1);
 				
-				return { year, month, day, hour, minute, second, millisecond };
+				let [year, month, day, hour, minute, second, millisecond] = isoMatch.slice(1);
+				
+				return {
+					year,
+					month,
+					day,
+					hour,
+					minute,
+					second,
+					millisecond,
+				};
 			}
 		};
 		
@@ -800,7 +891,7 @@ class DateTime {
 				day = matchedMix.md[2];
 			}
 			
-			if (matchedMix.hms) {				
+			if (matchedMix.hms) {
 				filtering(matchedMix.hms[0]);
 				
 				hour = matchedMix.hms[1];
@@ -827,7 +918,7 @@ class DateTime {
 				hour: /\d{1,2}시/,
 				minute: /\d{1,2}분/,
 				second: /\d{1,2}초/,
-				millisecond: /\d{1,3}밀리초/
+				millisecond: /\d{1,3}밀리초/,
 			};
 			
 			const matched = {};
@@ -848,20 +939,27 @@ class DateTime {
 			second ??= matched.second;
 			millisecond ??= matched.millisecond;
 			
-			if (year != null)
+			if (year != null) {
 				year = parseInt(year);
-			if (month != null)
+			}
+			if (month != null) {
 				month = parseInt(month);
-			if (day != null)
+			}
+			if (day != null) {
 				day = parseInt(day);
-			if (hour != null)
+			}
+			if (hour != null) {
 				hour = parseInt(hour);
-			if (minute != null)
+			}
+			if (minute != null) {
 				minute = parseInt(minute);
-			if (second != null)
+			}
+			if (second != null) {
 				second = parseInt(second);
-			if (millisecond != null)
+			}
+			if (millisecond != null) {
 				millisecond = parseInt(millisecond);
+			}
 			
 			// 보통 '3시'는 '오후 3시'로 해석되어야 함.
 			// 자동으로 오후로 해석되는 시간의 범위: 1시 ~ 7시 59분
@@ -893,29 +991,36 @@ class DateTime {
 				meridian = 'pm';
 			}
 			
-			if (hour != null && hour < 12 && meridian === 'pm')
+			if (hour != null && hour < 12 && meridian === 'pm') {
 				hour += 12;
+			}
 			
 			if (dateString.indexOf('아침') !== -1 && idx === -1) {  // '아침 9시' 라고 했으면 위에서 '오전'으로 이미 필터링 됨. 즉, 이건 '아침'만 있는 경우임.
 				filtering('아침');
-				day = std.gt({ hour: 7, minute: 30 }) ? std.day + 1 : std.day;
+				day = std.gt({
+					hour: 7,
+					minute: 30,
+				}) ? std.day + 1 : std.day;
 				hour = 7;
 				minute = 30;
 			}
 			else if (dateString.indexOf('정오') !== -1 && idx === -1) {
 				filtering('정오');
-				day = std.gt({ hour: 12 }) ? std.day + 1 : std.day;
+				day = std.gt({hour: 12}) ? std.day + 1 : std.day;
 				hour = 12;
 			}
 			else if (dateString.indexOf('점심') !== -1 && idx === -1) {
 				filtering('점심');
-				day = std.gt({ hour: 12, minute: 30 }) ? std.day + 1 : std.day;
+				day = std.gt({
+					hour: 12,
+					minute: 30,
+				}) ? std.day + 1 : std.day;
 				hour = 12;
 				minute = 30;
 			}
 			else if (dateString.indexOf('저녁') !== -1 && idx === -1) {
 				filtering('저녁');
-				day = std.gt({ hour: 18 }) ? std.day + 1 : std.day;
+				day = std.gt({hour: 18}) ? std.day + 1 : std.day;
 				hour = 18;
 			}
 			else if (dateString.indexOf('자정') !== -1 && idx === -1) {
@@ -926,20 +1031,27 @@ class DateTime {
 			
 			let ret = {};
 			
-			if (year != null)
+			if (year != null) {
 				ret.year = year;
-			if (month != null)
+			}
+			if (month != null) {
 				ret.month = month;
-			if (day != null)
+			}
+			if (day != null) {
 				ret.day = day;
-			if (hour != null)
+			}
+			if (hour != null) {
 				ret.hour = hour;
-			if (minute != null)
+			}
+			if (minute != null) {
 				ret.minute = minute;
-			if (second != null)
+			}
+			if (second != null) {
 				ret.second = second;
-			if (millisecond != null)
+			}
+			if (millisecond != null) {
 				ret.millisecond = millisecond;
+			}
 			
 			return ret;
 		};
@@ -953,9 +1065,9 @@ class DateTime {
 				'날': 'day',
 				'시간': 'hour',
 				'분': 'minute',
-				'초': 'second'
+				'초': 'second',
 			};
-			const units = [ 'year', 'month', 'day', 'hour', 'minute', 'second' ];
+			const units = ['year', 'month', 'day', 'hour', 'minute', 'second'];
 			
 			const RE_RELATIVE = /([+-]?\d+(?:.\d*)?) *(년|달|주|일|시간|분|초)/g;
 			const RE_RELATIVE_END = /[^오]+([전후뒤])/;
@@ -973,18 +1085,19 @@ class DateTime {
 				filtering(arr2[0]);
 				while ((arr = RE_RELATIVE.exec(dateString)) != null) {
 					filtering(arr[0]);
-
-					let [ diff, unit ] = arr.slice(1);
-					let [ direction ] = arr2.slice(1);
-
+					
+					let [diff, unit] = arr.slice(1);
+					let [direction] = arr2.slice(1);
+					
 					let key = unitMap[unit];
 					
 					if (unit === '주') {
 						ret['day'] = (ret['day'] ?? 0) + set(direction, diff, 7);
 						// '다음 주' -> '다음 주 월요일'로 자동매칭은 부드러우나, '3주 후'는 '3주 후 현재시간'으로 자동매칭이 더 합당함.
 					}
-					else
+					else {
 						ret[key] = (ret[key] ?? 0) + set(direction, diff);
+					}
 					
 					// '3시간 후' -> '3시간 후 현재시간'으로 자동매칭. '3일 후' -> '3일 후 현재시간' 으로 자동매칭...
 					ret.defaultToNow = true;
@@ -994,8 +1107,8 @@ class DateTime {
 			// '다음 <단위>'는 단위만 변경되면 나머지는 초기화임. 다음 시간 -> 다음 시간 0분 0초
 			while ((arr = RE_RELATIVE2.exec(dateString)) != null) {
 				filtering(arr[0]);
-
-				let [ diff, unit ] = arr.slice(1);
+				
+				let [diff, unit] = arr.slice(1);
 				
 				// 다다다다음 -> 다음 * 4
 				const diff_num = (diff.length - 1) * (diff[0] === '다' ? 1 : (diff[0] === '지' ? -1 : 0));
@@ -1004,8 +1117,9 @@ class DateTime {
 					ret['day'] = (ret['day'] ?? 0) + diff_num * 7;
 					ret['day'] += 0 - (std.weekday - 1);    // '다음 주' -> '다음 주 월요일'로 자동매칭
 				}
-				else
+				else {
 					ret[unitMap[unit]] = (ret[unitMap[unit]] ?? 0) + diff_num;
+				}
 			}
 			
 			// 일월화수목금토가 일주일이라고 하면 현재가 수요일일 때, 다음주 일요일은 5일 후. 그러나 평상시는 이 날을 그냥 이번주 일요일이라고 함.
@@ -1015,8 +1129,8 @@ class DateTime {
 					// /(?<=[^0-9요]+|^)([일월화수목금토])요일(?= +|$)/ 에서 후방탐색연산자 사용이 안되어서 이렇게 대신함
 					
 					filtering(arr[0]);
-
-					let [ week ] = arr.slice(1);
+					
+					let [week] = arr.slice(1);
 					
 					const today = std.weekday - 1;   // 일월화수목금토가 아니고 월화수목금토일
 					const start = ((ret['day'] ?? 0) + today) % 7;
@@ -1028,21 +1142,26 @@ class DateTime {
 			
 			return ret;
 		};
-
+		
 		let ret;
 		const iso_parsed = iso_parse();
-
+		
 		if (iso_parsed != null) {
 			filteredString = filteredString.replace(/\s+/g, ' ');
-			ret = { parse: iso_parsed, string: trim ? filteredString.trim() : filteredString };
+			ret = {
+				parse: iso_parsed,
+				string: trim ? filteredString.trim() : filteredString,
+			};
 		}
 		else {
 			const relative_parsed = relative_parse();
 			const common_parsed = common_parse();
-			if (Object.keys(common_parsed).length === 0 && Object.keys(relative_parsed).length === 0) 
-				ret = { string: trim ? filteredString.trim() : filteredString };
+			if (Object.keys(common_parsed).length === 0 && Object.keys(relative_parsed).length === 0) {
+				ret = {string: trim ? filteredString.trim() : filteredString};
+			}
 			else {
-				const units = [ 'year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond' ];
+				const units = [
+					'year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond'];
 				
 				// '3월 4일' 이라고 하면 '현재년도 3월 4일 0시 0분 0초'로 해석되어야 함. 즉, 마지막으로 데이터가 존재하는 unit 까지만 현재 날짜로 지정.
 				let lastIndex = -1;
@@ -1055,8 +1174,9 @@ class DateTime {
 				
 				// 상대 날짜는 현재 날짜와 더해줌
 				for (let i = 0; i < units.length; i++) {
-					if (!relative_parsed.defaultToNow && i > lastIndex)
+					if (!relative_parsed.defaultToNow && i > lastIndex) {
 						break;
+					}
 					
 					relative_parsed[units[i]] = (relative_parsed[units[i]] ?? 0) + std[units[i]];
 				}
@@ -1064,67 +1184,94 @@ class DateTime {
 				// 상대 날짜와 일반 날짜를 합쳐서 전체 parse 결과를 도출
 				let parsed = {};
 				for (let unit of units) {
-					if (common_parsed[unit] != null && relative_parsed[unit] != null)
-						parsed[unit] = relative_parsed[unit];   // 둘 다 있으면 relative_parsed 를 우선시
-					else if (common_parsed[unit] != null || relative_parsed[unit] != null)
+					if (common_parsed[unit] != null && relative_parsed[unit] != null) {
+						parsed[unit] = relative_parsed[unit];
+					}// 둘 다 있으면 relative_parsed 를 우선시
+					else if (common_parsed[unit] != null || relative_parsed[unit] != null) {
 						parsed[unit] = common_parsed[unit] ?? relative_parsed[unit];
+					}
 				}
 				
 				filteredString = filteredString.replace(/\s+/g, ' ');
-				ret = { parse: parsed, string: trim ? filteredString.trim() : filteredString };
+				ret = {
+					parse: parsed,
+					string: trim ? filteredString.trim() : filteredString,
+				};
 			}
 		}
-
-		if (getString)
+		
+		if (getString) {
 			return ret;
-		else
+		}
+		else {
 			return ret.parse;
-	}
-
-	_parse(dateString, getString = false, filterIncludeEnding = true, trim = true) {
-		return DateTime._parse(dateString, getString, filterIncludeEnding, trim, this, this.locale);
-	}
-
-	static parse(dateString, getString = false, filterIncludeEnding = true, trim = true, std = DateTime.now(), locale = 'ko-KR') {
-		let ret = DateTime._parse(dateString, getString, filterIncludeEnding, trim, std, locale);
-
-		if (getString)
-			return { parse: ret.parse == null ? null : DateTime.fromObject(ret.parse), string: ret.string };
-		else
-			return ret == null ? null : DateTime.fromObject(ret);
-	}
-
-	parse(dateString, getString = false, filterIncludeEnding = true, trim = true) {
-		let ret = this._parse(dateString, getString, filterIncludeEnding, trim);
-
-		if (getString)
-			return { parse: ret.parse == null ? null : DateTime.fromObject(ret.parse, this), string: ret.string };
-		else
-			return ret == null ? null : DateTime.fromObject(ret, this);
+		}
 	}
 	
-	static parseDuration(dateString, getString = false, filterIncludeEnding = true, std = DateTime.now(), locale = 'ko-KR') {
+	_parse(dateString, getString = false, filterIncludeEnding = true, trim = true) {
+		return DateTime._parse(dateString, getString, filterIncludeEnding, trim, this, this.locale,
+			this.globalizationPath);
+	}
+	
+	static parse(dateString, getString = false, filterIncludeEnding = true, trim = true, std = DateTime.now(),
+		locale = 'ko-KR', globalizationPath = DateTime.globalizationPath) {
+		let ret = DateTime._parse(dateString, getString, filterIncludeEnding, trim, std, locale);
+		
+		if (getString) {
+			return {
+				parse: ret.parse == null ? null : DateTime.fromObject(ret.parse),
+				string: ret.string,
+			};
+		}
+		else {
+			return ret == null ? null : DateTime.fromObject(ret);
+		}
+	}
+	
+	parse(dateString, getString = false, filterIncludeEnding = true, trim = true) {
+		let ret = this._parse(dateString, getString, filterIncludeEnding, trim);
+		
+		if (getString) {
+			return {
+				parse: ret.parse == null ? null : DateTime.fromObject(ret.parse, this),
+				string: ret.string,
+			};
+		}
+		else {
+			return ret == null ? null : DateTime.fromObject(ret, this);
+		}
+	}
+	
+	static parseDuration(dateString, getString = false, filterIncludeEnding = true, std = DateTime.now(),
+		locale = 'ko-KR',
+		globalizationPath = DateTime.globalizationPath) {
 		let split = dateString.split('부터');
 		
 		let ret;
-
+		
 		if (split.length === 1) {
-			let parse = DateTime.parse(dateString, true, filterIncludeEnding, true, std, locale);
-
+			let parse = DateTime.parse(dateString, true, filterIncludeEnding, true, std, locale, globalizationPath);
+			
 			ret = {
 				parse: {
 					from: split[0].includes('까지') ? std : parse.parse,
-					to: parse.parse
+					to: parse.parse,
 				},
-				string: parse.string
+				string: parse.string,
 			};
 		}
 		else {
 			let left = split[0];
 			let right = split.slice(1).join('부터');
 			
-			let { parse: leftParse, string: leftFString } = DateTime.parse(left, true, filterIncludeEnding, false, std, locale);
-			let { parse: rightParse, string: rightFString } = DateTime.parse(right, true, filterIncludeEnding, false, std, locale);
+			let {
+				parse: leftParse,
+				string: leftFString,
+			} = DateTime.parse(left, true, filterIncludeEnding, false, std, locale, globalizationPath);
+			let {
+				parse: rightParse,
+				string: rightFString,
+			} = DateTime.parse(right, true, filterIncludeEnding, false, std, locale, globalizationPath);
 			
 			let leftDT = leftParse == null ? null : DateTime.fromObject(leftParse);
 			let rightDT = rightParse == null ? null : DateTime.fromObject(rightParse);
@@ -1133,27 +1280,34 @@ class DateTime {
 				// 내일 3시부터 4시까지 -> 그냥 번역하면 '내일 3시' ~ '오늘 4시' 가 되지만 사실은 '4시'는 '내일 4시'를 뜻함
 				if (!leftDT.lt(rightDT)) {
 					let rightDT_ = DateTime.fromObject(Object.assign(leftParse, rightParse));
-
-					if (leftDT.lt(rightDT_))
+					
+					if (leftDT.lt(rightDT_)) {
 						rightDT = rightDT_;
-					// 내일 9시부터 10시 -> '10시'는 오전으로 자동 해석되므로 만약 오후로 바꿨을 때 leftDT < rightDT 를 만족해 합당하다면 시도.
-					else if (rightDT_.hour < 12 && leftDT.lt(rightDT_.add({ hour: 12 })))
-						rightDT = rightDT_.add({ hour: 12 });
-					else
+					}// 내일 9시부터 10시 -> '10시'는 오전으로 자동 해석되므로 만약 오후로 바꿨을 때 leftDT < rightDT 를 만족해 합당하다면 시도.
+					else if (rightDT_.hour < 12 && leftDT.lt(rightDT_.add({hour: 12}))) {
+						rightDT = rightDT_.add({hour: 12});
+					}
+					else {
 						rightDT = leftDT;
+					}
 				}
 			}
 			
 			ret = {
-				parse: { from: leftDT, to: rightDT },
-				string: (leftFString + rightFString).replace(/\s+/g, ' ').trim()
+				parse: {
+					from: leftDT,
+					to: rightDT,
+				},
+				string: (leftFString + rightFString).replace(/\s+/g, ' ').trim(),
 			};
 		}
-
-		if (getString)
+		
+		if (getString) {
 			return ret;
-		else
+		}
+		else {
 			return ret.parse;
+		}
 	}
 	
 	// static parse(dateString, locale = 'ko-KR') {
@@ -1651,97 +1805,133 @@ class DateTime {
 	
 	static sunday() {
 		const diff = (0 - new $D().getDay() + 7) % 7;
-		return DateTime.today().add({ day: diff });
+		return DateTime.today().add({day: diff});
 	}
 	
 	static monday() {
 		const diff = (1 - new $D().getDay() + 7) % 7;
-		return DateTime.today().add({ day: diff });
+		return DateTime.today().add({day: diff});
 	}
 	
 	static tuesday() {
 		const diff = (2 - new $D().getDay() + 7) % 7;
-		return DateTime.today().add({ day: diff });
+		return DateTime.today().add({day: diff});
 	}
 	
 	static wednesday() {
 		const diff = (3 - new $D().getDay() + 7) % 7;
-		return DateTime.today().add({ day: diff });
+		return DateTime.today().add({day: diff});
 	}
 	
 	static thursday() {
 		const diff = (4 - new $D().getDay() + 7) % 7;
-		return DateTime.today().add({ day: diff });
+		return DateTime.today().add({day: diff});
 	}
 	
 	static friday() {
 		const diff = (5 - new $D().getDay() + 7) % 7;
-		return DateTime.today().add({ day: diff });
+		return DateTime.today().add({day: diff});
 	}
 	
 	static saturday() {
 		const diff = (6 - new $D().getDay() + 7) % 7;
-		return DateTime.today().add({ day: diff });
+		return DateTime.today().add({day: diff});
 	}
 	
 	static january(day) {
 		day = day ?? 1;
-		return new DateTime({ month: 1, day: day });
+		return new DateTime({
+			month: 1,
+			day: day,
+		});
 	}
 	
 	static february(day) {
 		day = day ?? 1;
-		return new DateTime({ month: 2, day: day });
+		return new DateTime({
+			month: 2,
+			day: day,
+		});
 	}
 	
 	static march(day) {
 		day = day ?? 1;
-		return new DateTime({ month: 3, day: day });
+		return new DateTime({
+			month: 3,
+			day: day,
+		});
 	}
 	
 	static april(day) {
 		day = day ?? 1;
-		return new DateTime({ month: 4, day: day });
+		return new DateTime({
+			month: 4,
+			day: day,
+		});
 	}
 	
 	static may(day) {
 		day = day ?? 1;
-		return new DateTime({ month: 5, day: day });
+		return new DateTime({
+			month: 5,
+			day: day,
+		});
 	}
 	
 	static june(day) {
 		day = day ?? 1;
-		return new DateTime({ month: 6, day: day });
+		return new DateTime({
+			month: 6,
+			day: day,
+		});
 	}
 	
 	static july(day) {
 		day = day ?? 1;
-		return new DateTime({ month: 7, day: day });
+		return new DateTime({
+			month: 7,
+			day: day,
+		});
 	}
 	
 	static august(day) {
 		day = day ?? 1;
-		return new DateTime({ month: 8, day: day });
+		return new DateTime({
+			month: 8,
+			day: day,
+		});
 	}
 	
 	static september(day) {
 		day = day ?? 1;
-		return new DateTime({ month: 9, day: day });
+		return new DateTime({
+			month: 9,
+			day: day,
+		});
 	}
 	
 	static october(day) {
 		day = day ?? 1;
-		return new DateTime({ month: 10, day: day });
+		return new DateTime({
+			month: 10,
+			day: day,
+		});
 	}
 	
 	static november(day) {
 		day = day ?? 1;
-		return new DateTime({ month: 11, day: day });
+		return new DateTime({
+			month: 11,
+			day: day,
+		});
 	}
 	
 	static december(day) {
 		day = day || 1;
-		return new DateTime({ month: 12, day: day });
+		return new DateTime({
+			month: 12,
+			day: day,
+		});
 	}
 	
 	static isLeapYear(year) {
@@ -1755,15 +1945,17 @@ class DateTime {
 	}
 	
 	static lengthOfMonth(year, month) {
-		return [ 0, 31, (DateTime.isLeapYear(year) ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ][month];
+		return [
+			0, 31, (DateTime.isLeapYear(year) ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month];
 	}
 	
 	static lengthOfYear(year) {
 		return DateTime.isLeapYear(year) ? 366 : 365;
 	}
 	
-	static getWeekdayFromName(weekDayName, startOnMon = false, locale = 'ko-KR') {
-		const cultureInfo = getCultureInfo(locale);
+	static getWeekdayFromName(weekDayName, startOnMon = false, locale = 'ko-KR',
+		globalizationPath = DateTime.globalizationPath) {
+		const cultureInfo = getCultureInfo(locale, globalizationPath);
 		
 		let W = cultureInfo['W'];
 		let WW = cultureInfo['WW'];
@@ -1773,11 +1965,14 @@ class DateTime {
 			WW = WW.slice(1).concat(WW[0]);
 		}
 		
-		let ret = W.map(e => e.toLowerCase()).indexOf(weekDayName.toLowerCase());
-		if (ret === -1)
+		let ret = W.map(e => e.toLowerCase()).
+			indexOf(weekDayName.toLowerCase());
+		if (ret === -1) {
 			ret = WW.map(e => e.toLowerCase()).indexOf(weekDayName.toLowerCase());
-		if (ret === -1)
+		}
+		if (ret === -1) {
 			throw new Error('Invalid weekDayName, not found ' + weekDayName);
+		}
 		
 		return ret;
 	}
@@ -1800,7 +1995,8 @@ class DateTime {
 	}
 	
 	lengthOfMonth() {
-		return [ 0, 31, (this.isLeapYear() ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ][this.month];
+		return [
+			0, 31, (this.isLeapYear() ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][this.month];
 	}
 	
 	lengthOfYear() {

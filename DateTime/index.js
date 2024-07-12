@@ -12,6 +12,7 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
@@ -22,10 +23,17 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
 
 var IS_DIST = true;
 var $D = !IS_DIST ? global.Date : Date;
-var getCultureInfo = function getCultureInfo(locale) {
-  var ret = IS_DIST ? JSON.parse(FileStream.read("".concat(android.os.Environment.getExternalStorageDirectory().getAbsolutePath(), "/msgbot/global_modules/BotOperator/DateTime/globalization/").concat(locale, ".json"))) : require("./globalization/".concat(locale, ".json"));
-  if (ret == null) throw Error("Invalid Locale ".concat(locale, ". (").concat(android.os.Environment.getExternalStorageDirectory().getAbsolutePath(), "/msgbot/global_modules/BotOperator/DateTime/globalization/").concat(locale, ".json is not exist)"));
-  return ret;
+var getCultureInfo = function getCultureInfo(locale, globalizationPath) {
+  if (IS_DIST) {
+    var localePath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + '/' + globalizationPath + "/".concat(locale, ".json");
+    var ret = JSON.parse(FileStream.read(localePath));
+    if (ret == null) {
+      throw Error("Invalid Locale ".concat(locale, ". (").concat(localePath, " is not exist)"));
+    }
+    return ret;
+  } else {
+    return require("./globalization/".concat(locale, ".json"));
+  }
 };
 var Duration = /*#__PURE__*/function () {
   function Duration(millisecond) {
@@ -94,7 +102,9 @@ var Date = /*#__PURE__*/function () {
   }, {
     key: "subtract",
     value: function subtract(dateObject) {
-      if (dateObject instanceof Date) return new Duration(this._source.getTime() - dateObject._source.getTime());else if (dateObject instanceof Duration) {
+      if (dateObject instanceof Date) {
+        return new Duration(this._source.getTime() - dateObject._source.getTime());
+      } else if (dateObject instanceof Duration) {
         var dt = new $D(this._source);
         dt.setMilliseconds(dt.getMilliseconds() - dateObject.amount);
         return new Date(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
@@ -165,7 +175,9 @@ var Time = /*#__PURE__*/function () {
   }, {
     key: "subtract",
     value: function subtract(timeObject) {
-      if (timeObject instanceof Time) return new Duration(this._source.getTime() - timeObject._source.getTime());else if (timeObject instanceof Duration) {
+      if (timeObject instanceof Time) {
+        return new Duration(this._source.getTime() - timeObject._source.getTime());
+      } else if (timeObject instanceof Duration) {
         var dt = new $D(this._source);
         dt.setMilliseconds(dt.getMilliseconds() - timeObject.amount);
         return new Time(dt.getHours(), dt.getMinutes(), dt.getSeconds(), dt.getMilliseconds());
@@ -198,15 +210,28 @@ var Time = /*#__PURE__*/function () {
   return Time;
 }();
 var DateTime = /*#__PURE__*/function () {
-  function DateTime(datetimeObject, locale) {
+  function DateTime(datetimeObject) {
+    var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ko-KR';
+    var globalizationPath = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : DateTime.globalizationPath;
     _classCallCheck(this, DateTime);
     this._source = new $D();
     this._locale = locale !== null && locale !== void 0 ? locale : 'ko-KR';
+    this._globalizationPath = globalizationPath !== null && globalizationPath !== void 0 ? globalizationPath : DateTime.globalizationPath;
     if (datetimeObject instanceof $D) {
       this._source = datetimeObject;
     } else if (datetimeObject != null) {
       var dt;
-      if (datetimeObject instanceof DateTime) dt = datetimeObject;else if (typeof datetimeObject === 'number') dt = DateTime.fromNumber(datetimeObject);else if (_typeof(datetimeObject) === 'object' && !Array.isArray(datetimeObject)) dt = DateTime.fromObject(datetimeObject);else if (typeof datetimeObject === 'string') dt = DateTime.fromString(datetimeObject, this._locale);else throw new TypeError('`datetimeObject` must be $D, datetime, number, object, or string');
+      if (datetimeObject instanceof DateTime) {
+        dt = datetimeObject;
+      } else if (typeof datetimeObject === 'number') {
+        dt = DateTime.fromNumber(datetimeObject);
+      } else if (_typeof(datetimeObject) === 'object' && !Array.isArray(datetimeObject)) {
+        dt = DateTime.fromObject(datetimeObject);
+      } else if (typeof datetimeObject === 'string') {
+        dt = DateTime.fromString(datetimeObject, this._locale);
+      } else {
+        throw new TypeError('`datetimeObject` must be $D, datetime, number, object, or string');
+      }
       this._source = dt._source;
       this._locale = dt._locale;
     }
@@ -218,7 +243,9 @@ var DateTime = /*#__PURE__*/function () {
     },
     set: function set(dateObject) {
       var _dateObject$year2, _ref, _dateObject$day2;
-      if (!(dateObject instanceof Date)) throw new TypeError('`date` must be date');
+      if (!(dateObject instanceof Date)) {
+        throw new TypeError('`date` must be date');
+      }
       this._source.setFullYear((_dateObject$year2 = dateObject.year) !== null && _dateObject$year2 !== void 0 ? _dateObject$year2 : this._source.getFullYear());
       this._source.setMonth((_ref = dateObject.month - 1) !== null && _ref !== void 0 ? _ref : this._source.getMonth());
       this._source.setDate((_dateObject$day2 = dateObject.day) !== null && _dateObject$day2 !== void 0 ? _dateObject$day2 : this._source.getDate());
@@ -230,7 +257,9 @@ var DateTime = /*#__PURE__*/function () {
     },
     set: function set(timeObject) {
       var _timeObject$hour2, _timeObject$minute2, _timeObject$second2, _timeObject$milliseco2;
-      if (!(timeObject instanceof Time)) throw new TypeError('`time` must be time');
+      if (!(timeObject instanceof Time)) {
+        throw new TypeError('`time` must be time');
+      }
       this._source.setHours((_timeObject$hour2 = timeObject.hour) !== null && _timeObject$hour2 !== void 0 ? _timeObject$hour2 : this._source.getHours());
       this._source.setMinutes((_timeObject$minute2 = timeObject.minute) !== null && _timeObject$minute2 !== void 0 ? _timeObject$minute2 : this._source.getMinutes());
       this._source.setSeconds((_timeObject$second2 = timeObject.second) !== null && _timeObject$second2 !== void 0 ? _timeObject$second2 : this._source.getSeconds());
@@ -268,7 +297,7 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "weekdayName",
     get: function get() {
-      return getCultureInfo(this.locale)['WW'][this.weekday];
+      return getCultureInfo(this.locale, this.globalizationPath)['WW'][this.weekday];
     }
   }, {
     key: "hour",
@@ -311,6 +340,15 @@ var DateTime = /*#__PURE__*/function () {
       this._locale = value;
     }
   }, {
+    key: "globalizationPath",
+    get: function get() {
+      return this._globalizationPath;
+    },
+    set: function set(value) {
+      this._globalizationPath = value;
+      DateTime.globalizationPath = value;
+    }
+  }, {
     key: "timestamp",
     value: function timestamp() {
       return this._source.getTime();
@@ -320,7 +358,7 @@ var DateTime = /*#__PURE__*/function () {
     value: function toString(formatString) {
       var _formatString,
         _this = this;
-      var cultureInfo = getCultureInfo(this.locale);
+      var cultureInfo = getCultureInfo(this.locale, this.globalizationPath);
       formatString = (_formatString = formatString) !== null && _formatString !== void 0 ? _formatString : cultureInfo['formats']['full'];
       return formatString.replace(/ss?s?|mm?|hh?|ii?|t|DD?|WW?|MM?M?M?|YY(?:YY)?/g, function (match) {
         switch (match) {
@@ -404,8 +442,16 @@ var DateTime = /*#__PURE__*/function () {
 
         if (lastWeekMonDiff <= dayDiff && dayDiff <= nextWeekSunDiff) {
           // 저번 주 ~ 다음 주
-          if (dayDiff - lastWeekMonDiff < 7) str.date = "\uC9C0\uB09C \uC8FC ".concat(this.weekdayName);else if (nextWeekSunDiff - dayDiff < 7) str.date = "\uB2E4\uC74C \uC8FC ".concat(this.weekdayName);else if (dayDiff < 0) str.date = "\uC774\uBC88 \uC8FC ".concat(this.weekdayName); // 이번 주의 지나간 요일은 '이번 주' 포함
-          else str.date = this.weekdayName; // 이번 주의 아직 지나지 않은 요일은 '이번 주' 생략
+          if (dayDiff - lastWeekMonDiff < 7) {
+            str.date = "\uC9C0\uB09C \uC8FC ".concat(this.weekdayName);
+          } else if (nextWeekSunDiff - dayDiff < 7) {
+            str.date = "\uB2E4\uC74C \uC8FC ".concat(this.weekdayName);
+          } else if (dayDiff < 0) {
+            str.date = "\uC774\uBC88 \uC8FC ".concat(this.weekdayName);
+          } // 이번 주의 지나간 요일은 '이번 주' 포함
+          else {
+            str.date = this.weekdayName;
+          } // 이번 주의 아직 지나지 않은 요일은 '이번 주' 생략
         }
         // else if (this.year === now.year && this.month === now.month) {    // 저번 주 ~ 다음 주의 범위를 벗어나면서 달은 같은 경우
         // 	const week = dayDiff < 0 ? Math.ceil(dayDiff / 7) : Math.floor(dayDiff / 7);
@@ -420,12 +466,20 @@ var DateTime = /*#__PURE__*/function () {
         //
         // 	str.date = ret.join(' ') + (dayDiff < 0 ? ' 전' : ' 후');
         // }
-        else if (this.year === now.year) str.date = "".concat(this.month, "\uC6D4 ").concat(this.day, "\uC77C");else str.date = "".concat(this.year, "\uB144 ").concat(this.month, "\uC6D4 ").concat(this.day, "\uC77C");
+        else if (this.year === now.year) {
+          str.date = "".concat(this.month, "\uC6D4 ").concat(this.day, "\uC77C");
+        } else {
+          str.date = "".concat(this.year, "\uB144 ").concat(this.month, "\uC6D4 ").concat(this.day, "\uC77C");
+        }
       }
       var isRelative = false;
       if (!ignoreTime) {
-        if (this.hour === 0 && this.minute === 0 && this.second === 0) str.time = ""; // '오늘 자정'은 마치 내일 0시를 말하는 것 같아서 그냥 '오늘'로 표시
-        else if (this.hour === 12 && this.minute === 0 && this.second === 0) str.time = "정오";else {
+        if (this.hour === 0 && this.minute === 0 && this.second === 0) {
+          str.time = '';
+        } // '오늘 자정'은 마치 내일 0시를 말하는 것 같아서 그냥 '오늘'로 표시
+        else if (this.hour === 12 && this.minute === 0 && this.second === 0) {
+          str.time = '정오';
+        } else {
           var sign = secDiff < 0 ? '전' : '후';
           var amountSec = Math.abs(secDiff);
           var hour = Math.floor(amountSec / 3600);
@@ -434,20 +488,38 @@ var DateTime = /*#__PURE__*/function () {
           if (amountSec < 6 * 60 * 60) {
             // 6시간 이내
             isRelative = true;
-            if (hour !== 0) str.time += "".concat(hour, "\uC2DC\uAC04 ");
-            if (minute !== 0) str.time += "".concat(minute, "\uBD84 ");
-            if (second !== 0) str.time += "".concat(second, "\uCD08 ");
+            if (hour !== 0) {
+              str.time += "".concat(hour, "\uC2DC\uAC04 ");
+            }
+            if (minute !== 0) {
+              str.time += "".concat(minute, "\uBD84 ");
+            }
+            if (second !== 0) {
+              str.time += "".concat(second, "\uCD08 ");
+            }
             // 밀리초는 수행 시간에도 영향을 받고, 너무 세부적이므로 무시. 나중에 config 로 설정할 수 있게?
 
-            if (str.time !== '') str.time = str.time.trim() + " ".concat(sign);
-          } else str.time = this.toString("t h시 m분 s초").replace('0초', '').replace('0분', '').replace(/\s+/g, ' ').trimEnd();
+            if (str.time !== '') {
+              str.time = str.time.trim() + " ".concat(sign);
+            }
+          } else {
+            str.time = this.toString('t h시 m분 s초').replace(' 0초', '').replace(' 0분', '').replace(/\s+/g, ' ').trimEnd();
+          }
         }
       }
-      if (!ignoreTime && this.eq(now, true)) return '지금';else if (!ignoreTime && isRelative)
+      if (!ignoreTime && this.eq(now, true)) {
+        return '지금';
+      } else if (!ignoreTime && isRelative)
         // 상대적인 시간이면 최대 6시간 차이니까 날짜를 생략
-        return str.time;else if (!ignoreTime && str.date === '오늘' && str.time !== '')
+        {
+          return str.time;
+        } else if (!ignoreTime && str.date === '오늘' && str.time !== '')
         // 오늘인데 시간이 있으면 날짜를 생략
-        return str.time;else return "".concat(str.date, " ").concat(str.time).trim();
+        {
+          return str.time;
+        } else {
+        return "".concat(str.date, " ").concat(str.time).trim();
+      }
     }
   }, {
     key: "toNumber",
@@ -497,7 +569,9 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "subtract",
     value: function subtract(datetimeObject) {
-      if (datetimeObject instanceof DateTime) return new Duration(this.timestamp() - datetimeObject.timestamp());else if (datetimeObject instanceof Duration) {
+      if (datetimeObject instanceof DateTime) {
+        return new Duration(this.timestamp() - datetimeObject.timestamp());
+      } else if (datetimeObject instanceof Duration) {
         var dt = this.toDate();
         dt.setMilliseconds(dt.getMilliseconds() - datetimeObject.amount);
         return new DateTime(dt, this.locale);
@@ -530,13 +604,27 @@ var DateTime = /*#__PURE__*/function () {
         this.second = datetimeObject.second;
         this.millisecond = datetimeObject.millisecond;
       } else {
-        if (datetimeObject.year != null) this.year = datetimeObject.year;
-        if (datetimeObject.month != null) this.month = datetimeObject.month;
-        if (datetimeObject.day != null) this.day = datetimeObject.day;
-        if (datetimeObject.hour != null) this.hour = datetimeObject.hour;
-        if (datetimeObject.minute != null) this.minute = datetimeObject.minute;
-        if (datetimeObject.second != null) this.second = datetimeObject.second;
-        if (datetimeObject.millisecond != null) this.millisecond = datetimeObject.millisecond;
+        if (datetimeObject.year != null) {
+          this.year = datetimeObject.year;
+        }
+        if (datetimeObject.month != null) {
+          this.month = datetimeObject.month;
+        }
+        if (datetimeObject.day != null) {
+          this.day = datetimeObject.day;
+        }
+        if (datetimeObject.hour != null) {
+          this.hour = datetimeObject.hour;
+        }
+        if (datetimeObject.minute != null) {
+          this.minute = datetimeObject.minute;
+        }
+        if (datetimeObject.second != null) {
+          this.second = datetimeObject.second;
+        }
+        if (datetimeObject.millisecond != null) {
+          this.millisecond = datetimeObject.millisecond;
+        }
       }
       return this;
     }
@@ -544,7 +632,9 @@ var DateTime = /*#__PURE__*/function () {
     key: "eq",
     value: function eq(datetimeObject) {
       var ignoreMillisecond = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-      if (datetimeObject.constructor === Object) datetimeObject = DateTime.fromObject(datetimeObject, this);
+      if (datetimeObject.constructor === Object) {
+        datetimeObject = DateTime.fromObject(datetimeObject, this);
+      }
       if (ignoreMillisecond) {
         var other = new DateTime(datetimeObject, this.locale);
         return this.timestamp() - this.millisecond === other.timestamp() - other.millisecond;
@@ -562,28 +652,36 @@ var DateTime = /*#__PURE__*/function () {
   }, {
     key: "ge",
     value: function ge(datetimeObject) {
-      if (datetimeObject.constructor === Object) datetimeObject = DateTime.fromObject(datetimeObject, this);
+      if (datetimeObject.constructor === Object) {
+        datetimeObject = DateTime.fromObject(datetimeObject, this);
+      }
       var other = new DateTime(datetimeObject, this.locale);
       return this.timestamp() >= other.timestamp();
     }
   }, {
     key: "gt",
     value: function gt(datetimeObject) {
-      if (datetimeObject.constructor === Object) datetimeObject = DateTime.fromObject(datetimeObject, this);
+      if (datetimeObject.constructor === Object) {
+        datetimeObject = DateTime.fromObject(datetimeObject, this);
+      }
       var other = new DateTime(datetimeObject, this.locale);
       return this.timestamp() > other.timestamp();
     }
   }, {
     key: "le",
     value: function le(datetimeObject) {
-      if (datetimeObject.constructor === Object) datetimeObject = DateTime.fromObject(datetimeObject, this);
+      if (datetimeObject.constructor === Object) {
+        datetimeObject = DateTime.fromObject(datetimeObject, this);
+      }
       var other = new DateTime(datetimeObject, this.locale);
       return this.timestamp() <= other.timestamp();
     }
   }, {
     key: "lt",
     value: function lt(datetimeObject) {
-      if (datetimeObject.constructor === Object) datetimeObject = DateTime.fromObject(datetimeObject, this);
+      if (datetimeObject.constructor === Object) {
+        datetimeObject = DateTime.fromObject(datetimeObject, this);
+      }
       var other = new DateTime(datetimeObject, this.locale);
       return this.timestamp() < other.timestamp();
     }
@@ -593,7 +691,7 @@ var DateTime = /*#__PURE__*/function () {
       var getString = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var filterIncludeEnding = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
       var trim = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
-      return DateTime._parse(dateString, getString, filterIncludeEnding, trim, this, this.locale);
+      return DateTime._parse(dateString, getString, filterIncludeEnding, trim, this, this.locale, this.globalizationPath);
     }
   }, {
     key: "parse",
@@ -602,10 +700,14 @@ var DateTime = /*#__PURE__*/function () {
       var filterIncludeEnding = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
       var trim = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
       var ret = this._parse(dateString, getString, filterIncludeEnding, trim);
-      if (getString) return {
-        parse: ret.parse == null ? null : DateTime.fromObject(ret.parse, this),
-        string: ret.string
-      };else return ret == null ? null : DateTime.fromObject(ret, this);
+      if (getString) {
+        return {
+          parse: ret.parse == null ? null : DateTime.fromObject(ret.parse, this),
+          string: ret.string
+        };
+      } else {
+        return ret == null ? null : DateTime.fromObject(ret, this);
+      }
     }
   }, {
     key: "isLeapYear",
@@ -652,7 +754,8 @@ var DateTime = /*#__PURE__*/function () {
       var trim = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
       var std = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : DateTime.now();
       var locale = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 'ko-KR';
-      return DateTime.dehumanize(dateString, useDuration, getString, filterIncludeEnding, trim, std, locale);
+      var globalizationPath = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : DateTime.globalizationPath;
+      return DateTime.dehumanize(dateString, useDuration, getString, filterIncludeEnding, trim, std, locale, globalizationPath);
     }
   }, {
     key: "dehumanize",
@@ -663,7 +766,12 @@ var DateTime = /*#__PURE__*/function () {
       var trim = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
       var std = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : DateTime.now();
       var locale = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 'ko-KR';
-      if (useDuration) return DateTime.parseDuration(dateString, getString, filterIncludeEnding, std, locale);else return DateTime.parse(dateString, getString, filterIncludeEnding, trim, std, locale);
+      var globalizationPath = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : DateTime.globalizationPath;
+      if (useDuration) {
+        return DateTime.parseDuration(dateString, getString, filterIncludeEnding, std, locale, globalizationPath);
+      } else {
+        return DateTime.parse(dateString, getString, filterIncludeEnding, trim, std, locale, globalizationPath);
+      }
     }
   }, {
     key: "fromNumber",
@@ -748,7 +856,9 @@ var DateTime = /*#__PURE__*/function () {
         ret.millisecond += ret.second % 1 * 1000;
         ret.second = ret.second >= 0 ? Math.floor(ret.second) : Math.ceil(ret.second);
       }
-      if (ret.millisecond % 1 !== 0) throw new Error('millisecond must be integer');
+      if (ret.millisecond % 1 !== 0) {
+        throw new Error('millisecond must be integer');
+      }
       return DateTime.set(ret);
     }
   }, {
@@ -794,7 +904,8 @@ var DateTime = /*#__PURE__*/function () {
       var trim = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
       var std = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : DateTime.now();
       var locale = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 'ko-KR';
-      var cultureInfo = getCultureInfo(locale);
+      var globalizationPath = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : DateTime.globalizationPath;
+      var cultureInfo = getCultureInfo(locale, globalizationPath);
       var replaces = _objectEntries(cultureInfo['replaces']);
       replaces.sort(function (a, b) {
         return b[0].length - a[0].length;
@@ -915,13 +1026,27 @@ var DateTime = /*#__PURE__*/function () {
         (_minute = minute) !== null && _minute !== void 0 ? _minute : minute = matched.minute;
         (_second = second) !== null && _second !== void 0 ? _second : second = matched.second;
         (_millisecond = millisecond) !== null && _millisecond !== void 0 ? _millisecond : millisecond = matched.millisecond;
-        if (year != null) year = parseInt(year);
-        if (month != null) month = parseInt(month);
-        if (day != null) day = parseInt(day);
-        if (hour != null) hour = parseInt(hour);
-        if (minute != null) minute = parseInt(minute);
-        if (second != null) second = parseInt(second);
-        if (millisecond != null) millisecond = parseInt(millisecond);
+        if (year != null) {
+          year = parseInt(year);
+        }
+        if (month != null) {
+          month = parseInt(month);
+        }
+        if (day != null) {
+          day = parseInt(day);
+        }
+        if (hour != null) {
+          hour = parseInt(hour);
+        }
+        if (minute != null) {
+          minute = parseInt(minute);
+        }
+        if (second != null) {
+          second = parseInt(second);
+        }
+        if (millisecond != null) {
+          millisecond = parseInt(millisecond);
+        }
 
         // 보통 '3시'는 '오후 3시'로 해석되어야 함.
         // 자동으로 오후로 해석되는 시간의 범위: 1시 ~ 7시 59분
@@ -947,7 +1072,9 @@ var DateTime = /*#__PURE__*/function () {
           filtering('pm');
           meridian = 'pm';
         }
-        if (hour != null && hour < 12 && meridian === 'pm') hour += 12;
+        if (hour != null && hour < 12 && meridian === 'pm') {
+          hour += 12;
+        }
         if (dateString.indexOf('아침') !== -1 && idx === -1) {
           // '아침 9시' 라고 했으면 위에서 '오전'으로 이미 필터링 됨. 즉, 이건 '아침'만 있는 경우임.
           filtering('아침');
@@ -983,13 +1110,27 @@ var DateTime = /*#__PURE__*/function () {
           hour = 0;
         }
         var ret = {};
-        if (year != null) ret.year = year;
-        if (month != null) ret.month = month;
-        if (day != null) ret.day = day;
-        if (hour != null) ret.hour = hour;
-        if (minute != null) ret.minute = minute;
-        if (second != null) ret.second = second;
-        if (millisecond != null) ret.millisecond = millisecond;
+        if (year != null) {
+          ret.year = year;
+        }
+        if (month != null) {
+          ret.month = month;
+        }
+        if (day != null) {
+          ret.day = day;
+        }
+        if (hour != null) {
+          ret.hour = hour;
+        }
+        if (minute != null) {
+          ret.minute = minute;
+        }
+        if (second != null) {
+          ret.second = second;
+        }
+        if (millisecond != null) {
+          ret.millisecond = millisecond;
+        }
         return ret;
       };
       var relative_parse = function relative_parse() {
@@ -1021,7 +1162,6 @@ var DateTime = /*#__PURE__*/function () {
         if (arr2 != null) {
           filtering(arr2[0]);
           while ((arr = RE_RELATIVE.exec(dateString)) != null) {
-            var _ret$key;
             filtering(arr[0]);
             var _arr$slice = arr.slice(1),
               _arr$slice2 = _slicedToArray(_arr$slice, 2),
@@ -1035,7 +1175,10 @@ var DateTime = /*#__PURE__*/function () {
               var _ret$day;
               ret['day'] = ((_ret$day = ret['day']) !== null && _ret$day !== void 0 ? _ret$day : 0) + set(direction, diff, 7);
               // '다음 주' -> '다음 주 월요일'로 자동매칭은 부드러우나, '3주 후'는 '3주 후 현재시간'으로 자동매칭이 더 합당함.
-            } else ret[key] = ((_ret$key = ret[key]) !== null && _ret$key !== void 0 ? _ret$key : 0) + set(direction, diff);
+            } else {
+              var _ret$key;
+              ret[key] = ((_ret$key = ret[key]) !== null && _ret$key !== void 0 ? _ret$key : 0) + set(direction, diff);
+            }
 
             // '3시간 후' -> '3시간 후 현재시간'으로 자동매칭. '3일 후' -> '3일 후 현재시간' 으로 자동매칭...
             ret.defaultToNow = true;
@@ -1044,7 +1187,6 @@ var DateTime = /*#__PURE__*/function () {
 
         // '다음 <단위>'는 단위만 변경되면 나머지는 초기화임. 다음 시간 -> 다음 시간 0분 0초
         while ((arr = RE_RELATIVE2.exec(dateString)) != null) {
-          var _ret$unitMap$_unit;
           filtering(arr[0]);
           var _arr$slice3 = arr.slice(1),
             _arr$slice4 = _slicedToArray(_arr$slice3, 2),
@@ -1057,7 +1199,10 @@ var DateTime = /*#__PURE__*/function () {
             var _ret$day2;
             ret['day'] = ((_ret$day2 = ret['day']) !== null && _ret$day2 !== void 0 ? _ret$day2 : 0) + diff_num * 7;
             ret['day'] += 0 - (std.weekday - 1); // '다음 주' -> '다음 주 월요일'로 자동매칭
-          } else ret[unitMap[_unit]] = ((_ret$unitMap$_unit = ret[unitMap[_unit]]) !== null && _ret$unitMap$_unit !== void 0 ? _ret$unitMap$_unit : 0) + diff_num;
+          } else {
+            var _ret$unitMap$_unit;
+            ret[unitMap[_unit]] = ((_ret$unitMap$_unit = ret[unitMap[_unit]]) !== null && _ret$unitMap$_unit !== void 0 ? _ret$unitMap$_unit : 0) + diff_num;
+          }
         }
 
         // 일월화수목금토가 일주일이라고 하면 현재가 수요일일 때, 다음주 일요일은 5일 후. 그러나 평상시는 이 날을 그냥 이번주 일요일이라고 함.
@@ -1090,9 +1235,11 @@ var DateTime = /*#__PURE__*/function () {
       } else {
         var relative_parsed = relative_parse();
         var common_parsed = common_parse();
-        if (Object.keys(common_parsed).length === 0 && Object.keys(relative_parsed).length === 0) ret = {
-          string: trim ? filteredString.trim() : filteredString
-        };else {
+        if (Object.keys(common_parsed).length === 0 && Object.keys(relative_parsed).length === 0) {
+          ret = {
+            string: trim ? filteredString.trim() : filteredString
+          };
+        } else {
           var units = ['year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond'];
 
           // '3월 4일' 이라고 하면 '현재년도 3월 4일 0시 0분 0초'로 해석되어야 함. 즉, 마지막으로 데이터가 존재하는 unit 까지만 현재 날짜로 지정.
@@ -1107,17 +1254,23 @@ var DateTime = /*#__PURE__*/function () {
           // 상대 날짜는 현재 날짜와 더해줌
           for (var _i3 = 0; _i3 < units.length; _i3++) {
             var _relative_parsed$unit;
-            if (!relative_parsed.defaultToNow && _i3 > lastIndex) break;
+            if (!relative_parsed.defaultToNow && _i3 > lastIndex) {
+              break;
+            }
             relative_parsed[units[_i3]] = ((_relative_parsed$unit = relative_parsed[units[_i3]]) !== null && _relative_parsed$unit !== void 0 ? _relative_parsed$unit : 0) + std[units[_i3]];
           }
 
           // 상대 날짜와 일반 날짜를 합쳐서 전체 parse 결과를 도출
           var parsed = {};
           for (var _i4 = 0, _units2 = units; _i4 < _units2.length; _i4++) {
-            var _common_parsed$unit;
             var unit = _units2[_i4];
-            if (common_parsed[unit] != null && relative_parsed[unit] != null) parsed[unit] = relative_parsed[unit]; // 둘 다 있으면 relative_parsed 를 우선시
-            else if (common_parsed[unit] != null || relative_parsed[unit] != null) parsed[unit] = (_common_parsed$unit = common_parsed[unit]) !== null && _common_parsed$unit !== void 0 ? _common_parsed$unit : relative_parsed[unit];
+            if (common_parsed[unit] != null && relative_parsed[unit] != null) {
+              parsed[unit] = relative_parsed[unit];
+            } // 둘 다 있으면 relative_parsed 를 우선시
+            else if (common_parsed[unit] != null || relative_parsed[unit] != null) {
+              var _common_parsed$unit;
+              parsed[unit] = (_common_parsed$unit = common_parsed[unit]) !== null && _common_parsed$unit !== void 0 ? _common_parsed$unit : relative_parsed[unit];
+            }
           }
           filteredString = filteredString.replace(/\s+/g, ' ');
           ret = {
@@ -1126,7 +1279,11 @@ var DateTime = /*#__PURE__*/function () {
           };
         }
       }
-      if (getString) return ret;else return ret.parse;
+      if (getString) {
+        return ret;
+      } else {
+        return ret.parse;
+      }
     }
   }, {
     key: "parse",
@@ -1136,11 +1293,16 @@ var DateTime = /*#__PURE__*/function () {
       var trim = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
       var std = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : DateTime.now();
       var locale = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 'ko-KR';
+      var globalizationPath = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : DateTime.globalizationPath;
       var ret = DateTime._parse(dateString, getString, filterIncludeEnding, trim, std, locale);
-      if (getString) return {
-        parse: ret.parse == null ? null : DateTime.fromObject(ret.parse),
-        string: ret.string
-      };else return ret == null ? null : DateTime.fromObject(ret);
+      if (getString) {
+        return {
+          parse: ret.parse == null ? null : DateTime.fromObject(ret.parse),
+          string: ret.string
+        };
+      } else {
+        return ret == null ? null : DateTime.fromObject(ret);
+      }
     }
   }, {
     key: "parseDuration",
@@ -1149,10 +1311,11 @@ var DateTime = /*#__PURE__*/function () {
       var filterIncludeEnding = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
       var std = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : DateTime.now();
       var locale = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 'ko-KR';
+      var globalizationPath = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : DateTime.globalizationPath;
       var split = dateString.split('부터');
       var ret;
       if (split.length === 1) {
-        var parse = DateTime.parse(dateString, true, filterIncludeEnding, true, std, locale);
+        var parse = DateTime.parse(dateString, true, filterIncludeEnding, true, std, locale, globalizationPath);
         ret = {
           parse: {
             from: split[0].includes('까지') ? std : parse.parse,
@@ -1163,10 +1326,10 @@ var DateTime = /*#__PURE__*/function () {
       } else {
         var left = split[0];
         var right = split.slice(1).join('부터');
-        var _DateTime$parse = DateTime.parse(left, true, filterIncludeEnding, false, std, locale),
+        var _DateTime$parse = DateTime.parse(left, true, filterIncludeEnding, false, std, locale, globalizationPath),
           leftParse = _DateTime$parse.parse,
           leftFString = _DateTime$parse.string;
-        var _DateTime$parse2 = DateTime.parse(right, true, filterIncludeEnding, false, std, locale),
+        var _DateTime$parse2 = DateTime.parse(right, true, filterIncludeEnding, false, std, locale, globalizationPath),
           rightParse = _DateTime$parse2.parse,
           rightFString = _DateTime$parse2.string;
         var leftDT = leftParse == null ? null : DateTime.fromObject(leftParse);
@@ -1175,13 +1338,18 @@ var DateTime = /*#__PURE__*/function () {
           // 내일 3시부터 4시까지 -> 그냥 번역하면 '내일 3시' ~ '오늘 4시' 가 되지만 사실은 '4시'는 '내일 4시'를 뜻함
           if (!leftDT.lt(rightDT)) {
             var rightDT_ = DateTime.fromObject(Object.assign(leftParse, rightParse));
-            if (leftDT.lt(rightDT_)) rightDT = rightDT_;
-            // 내일 9시부터 10시 -> '10시'는 오전으로 자동 해석되므로 만약 오후로 바꿨을 때 leftDT < rightDT 를 만족해 합당하다면 시도.
+            if (leftDT.lt(rightDT_)) {
+              rightDT = rightDT_;
+            } // 내일 9시부터 10시 -> '10시'는 오전으로 자동 해석되므로 만약 오후로 바꿨을 때 leftDT < rightDT 를 만족해 합당하다면 시도.
             else if (rightDT_.hour < 12 && leftDT.lt(rightDT_.add({
               hour: 12
-            }))) rightDT = rightDT_.add({
-              hour: 12
-            });else rightDT = leftDT;
+            }))) {
+              rightDT = rightDT_.add({
+                hour: 12
+              });
+            } else {
+              rightDT = leftDT;
+            }
           }
         }
         ret = {
@@ -1192,7 +1360,11 @@ var DateTime = /*#__PURE__*/function () {
           string: (leftFString + rightFString).replace(/\s+/g, ' ').trim()
         };
       }
-      if (getString) return ret;else return ret.parse;
+      if (getString) {
+        return ret;
+      } else {
+        return ret.parse;
+      }
     }
 
     // static parse(dateString, locale = 'ko-KR') {
@@ -1894,7 +2066,8 @@ var DateTime = /*#__PURE__*/function () {
     value: function getWeekdayFromName(weekDayName) {
       var startOnMon = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var locale = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'ko-KR';
-      var cultureInfo = getCultureInfo(locale);
+      var globalizationPath = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : DateTime.globalizationPath;
+      var cultureInfo = getCultureInfo(locale, globalizationPath);
       var W = cultureInfo['W'];
       var WW = cultureInfo['WW'];
       if (startOnMon) {
@@ -1904,15 +2077,20 @@ var DateTime = /*#__PURE__*/function () {
       var ret = W.map(function (e) {
         return e.toLowerCase();
       }).indexOf(weekDayName.toLowerCase());
-      if (ret === -1) ret = WW.map(function (e) {
-        return e.toLowerCase();
-      }).indexOf(weekDayName.toLowerCase());
-      if (ret === -1) throw new Error('Invalid weekDayName, not found ' + weekDayName);
+      if (ret === -1) {
+        ret = WW.map(function (e) {
+          return e.toLowerCase();
+        }).indexOf(weekDayName.toLowerCase());
+      }
+      if (ret === -1) {
+        throw new Error('Invalid weekDayName, not found ' + weekDayName);
+      }
       return ret;
     }
   }]);
   return DateTime;
 }();
+_defineProperty(DateTime, "globalizationPath", 'msgbot/global_modules/DateTime/globalization');
 exports.DateTime = DateTime;
 exports.Date = Date;
 exports.Time = Time;

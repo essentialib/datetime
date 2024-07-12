@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const distPath = path.join(__dirname, 'dist');
+const distPath = path.join(__dirname, 'DateTime');
 dfs(distPath);
 
 function dfs(dir) {
