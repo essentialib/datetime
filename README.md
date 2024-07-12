@@ -114,7 +114,7 @@ bot.addListener(Event.MESSAGE, onMessage);
   ```js
   parseDuration`내일 3시부터 5시까지 미팅`;  // ✅
   parseDuration`모레 6시부터 9시 스터디`; // ✅
-  parseDuration`다음주 화요일 9시부터 10시까지 연세세브란스 방문`; // ✅
+  parseDuration`다음주 화요일 9시부터 10시까지 병원 방문`; // ✅
   ```
 </details>
 
