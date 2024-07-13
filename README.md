@@ -20,6 +20,13 @@ function onMessage(msg) {
 bot.addListener(Event.MESSAGE, onMessage);
 ```
 
+> [!IMPORTANT]
+> DateTime 모듈 폴더의 globalization 폴더의 경로를 명시해야합니다. 기본값은 'msgbot/global_modules/DateTime/globalization' 입니다.
+```js
+const { DateTime } = require("DateTime")
+DateTime.globalizationPath = "(globalization 폴더 경로명)";
+```
+
 ## Features
 
 [d.ts](https://github.com/essentialib/datetime/blob/main/src/index.d.ts) 파일을 통해 자세하게 확인 가능합니다. 주석과 타입 힌트를 모두 지원합니다.
