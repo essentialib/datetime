@@ -4,7 +4,7 @@ parse = string => {
 	console.log(string[0]);
 	const parsed = DateTime.parse(string[0]);
 	if (parsed == null)
-		console.log(`${string[0]}: null!`)
+		console.log(`${string[0]}: null (잘못된 입력)`)
 	else
 		console.log(parsed.toString('YYYY-MM-DD t hh:mm:ss.sss WW'));
 };
@@ -54,6 +54,7 @@ parseDuration = string => {
 // parse`이번 주` // ✅
 // parse`이번 달` // ✅
 // parse`이번 주 일요일` // ✅
+parse`보름`	// todo
 // parse`오늘`   // ✅
 // parse`어제`   // ✅
 // parse`내일`   // ✅
@@ -68,6 +69,7 @@ parseDuration = string => {
 // parse`그그끄저께`    // ✅
 // parse`3시간 후`    // ✅
 // parse``   // ✅
+// parse` `   // ✅
 // parse`5시간 13분 8초 후`    // ✅
 // parse`4시간 3분 이전`    // ✅
 // parse`아침`    // ✅
@@ -95,14 +97,15 @@ parseDuration = string => {
 // parseDuration`내일부터 어제까지`	// ✅
 // parseDuration`3월 3일부터 다음 주 까지`	// ✅
 // parse`이번주 일요일`	// ✅
-// parse`이번주 일요일`	// ✅
-// parse`이번주 일요일까지`	// ✅
-// parseDuration`이번주 일요일까지`	// ✅
+parse`이번주 일요일`	// ✅
+parse`이번주 일요일까지`	// ✅
+parseDuration`이번주 일요일까지`	// ✅
 // parseDuration`오늘부터 이번주 일요일까지`	// ✅
+// parseDuration`오늘부터 일요일까지`	// ✅
 
 // // 기준 날짜에서 다시 parse
 // datetime = DateTime.parse('이번주 일요일');
 // console.log(datetime.toString());
 // console.log(datetime.parse('3일 후').toString());	// 이번주 일요일에서 3일 후 ✅
 
-console.log(DateTime.parse('내일 3시에 미팅', true, true).parse.toString());
+// console.log(DateTime.parse('내일 3시에 미팅', true, true).parse.toString());
