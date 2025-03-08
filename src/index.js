@@ -5,9 +5,8 @@ const $D = !IS_DIST ? global.Date : Date;
 
 const getCultureInfo = (locale, globalizationPath) => {
 	if (IS_DIST) {
-		const localePath = android.os.Environment.getExternalStorageDirectory().
-			                   getAbsolutePath() + '/' + globalizationPath + `/${locale}.json`;
-		
+		const MSGBOT = com.xfl.msgbot.utils.SharedVar.Companion.getBotsPath().split('/').slice(0, -1).join('/');
+		const localePath = `${MSGBOT}/global_modules/${globalizationPath}/${locale}.json`;
 		let ret = JSON.parse(FileStream.read(localePath));
 		
 		if (ret == null) {
@@ -178,7 +177,7 @@ class Time {
 }
 
 class DateTime {
-	static globalizationPath = 'msgbot/global_modules/DateTime/globalization';
+	static globalizationPath = 'DateTime/globalization';
 	
 	constructor(datetimeObject, locale = 'ko-KR', globalizationPath = DateTime.globalizationPath) {
 		this._source = new $D();
@@ -558,7 +557,7 @@ class DateTime {
 		return dt;
 	}
 	
-	static fromObject(datetimeObject, standard = undefined) {
+	static fromObject(datetimeObject, standard = undefined, defaultToEnd = false) {
 		const now = new DateTime();
 		
 		const ret = {};
@@ -572,12 +571,12 @@ class DateTime {
 		
 		const defaults = {
 			year: (standard ? (standard.year ?? now.year) : now.year),
-			month: (standard ? (standard.month ?? now.month) : 1),
-			day: (standard ? (standard.day ?? now.day) : 1),
-			hour: (standard ? (standard.hour ?? now.hour) : 0),
-			minute: (standard ? (standard.minute ?? now.minute) : 0),
-			second: (standard ? (standard.second ?? now.second) : 0),
-			millisecond: (standard ? (standard.millisecond ?? now.millisecond) : 0),
+			month: (standard ? (standard.month ?? now.month) : (defaultToEnd ? 12 : 1)),
+			day: (standard ? (standard.day ?? now.day) : 1),	// defaultToEnd 따로 처리
+			hour: (standard ? (standard.hour ?? now.hour) : (defaultToEnd ? 23 : 0)),
+			minute: (standard ? (standard.minute ?? now.minute) : (defaultToEnd ? 59 : 0)),
+			second: (standard ? (standard.second ?? now.second) : (defaultToEnd ? 59 : 0)),
+			millisecond: (standard ? (standard.millisecond ?? now.millisecond) : (defaultToEnd ? 999 : 0)),
 		};
 		
 		const units = [
@@ -594,7 +593,12 @@ class DateTime {
 				let x = units.indexOf(unit);
 				
 				for (let i = 0; i < x; i++) ret[units[i]] ??= (standard ?? now)[units[i]];
-				for (let i = x; i < units.length; i++) ret[units[i]] ??= defaults[units[i]];
+				for (let i = x; i < units.length; i++) {
+					if (units[i] === "day" && defaultToEnd)
+						ret[units[i]] ??= this.lengthOfMonth(ret.year, ret.month);	// todo: 버그 날 소지 매우 많음. ret.year가 float 라던가 null이라던가...
+					else
+						ret[units[i]] ??= defaults[units[i]];
+				}
 				
 				find = true;
 				break;
@@ -787,7 +791,19 @@ class DateTime {
 		
 		return new DateTime(date);
 	}
-	
+
+	at(hour, minute, second, millisecond) {
+		const dt = new DateTime();
+		dt.date = this.date;
+
+		if (hour instanceof Time)
+			dt.time = hour;
+		else
+			dt.time = new Time(hour, minute, second, millisecond);
+
+		return dt;
+	}
+
 	static in(year) {
 		return new DateTime(new $D(year, 0, 1));
 	}
@@ -811,7 +827,7 @@ class DateTime {
 	}
 	
 	static _parse(dateString, getString = false, filterIncludeEnding = true, trim = true, std = DateTime.now(),
-		locale = 'ko-KR', globalizationPath = DateTime.globalizationPath) {
+		locale = 'ko-KR', globalizationPath = DateTime.globalizationPath, defaultToEnd = false) {
 		const cultureInfo = getCultureInfo(locale, globalizationPath);
 		
 		const replaces = Object.entries(cultureInfo['replaces']);
@@ -998,10 +1014,10 @@ class DateTime {
 			if (dateString.indexOf('아침') !== -1 && idx === -1) {  // '아침 9시' 라고 했으면 위에서 '오전'으로 이미 필터링 됨. 즉, 이건 '아침'만 있는 경우임.
 				filtering('아침');
 				day = std.gt({
-					hour: 7,
+					hour: 8,
 					minute: 30,
 				}) ? std.day + 1 : std.day;
-				hour = 7;
+				hour = 8;
 				minute = 30;
 			}
 			else if (dateString.indexOf('정오') !== -1 && idx === -1) {
@@ -1115,7 +1131,7 @@ class DateTime {
 				
 				if (unit === '주') {
 					ret['day'] = (ret['day'] ?? 0) + diff_num * 7;
-					ret['day'] += 0 - (std.weekday - 1);    // '다음 주' -> '다음 주 월요일'로 자동매칭
+					ret['day'] += (defaultToEnd ? 6 : 0) - (std.weekday - 1);    // '다음 주' -> '다음 주 월요일' 로 자동매칭 defaultToEnd가 true면 일요일로.
 				}
 				else {
 					ret[unitMap[unit]] = (ret[unitMap[unit]] ?? 0) + diff_num;
@@ -1214,17 +1230,17 @@ class DateTime {
 	}
 	
 	static parse(dateString, getString = false, filterIncludeEnding = true, trim = true, std = DateTime.now(),
-		locale = 'ko-KR', globalizationPath = DateTime.globalizationPath) {
-		let ret = DateTime._parse(dateString, getString, filterIncludeEnding, trim, std, locale);
+		locale = 'ko-KR', globalizationPath = DateTime.globalizationPath, defaultToEnd = false) {
+		let ret = DateTime._parse(dateString, getString, filterIncludeEnding, trim, std, locale, globalizationPath, defaultToEnd);
 		
 		if (getString) {
 			return {
-				parse: ret.parse == null ? null : DateTime.fromObject(ret.parse),
+				parse: ret.parse == null ? null : DateTime.fromObject(ret.parse, undefined, defaultToEnd),
 				string: ret.string,
 			};
 		}
 		else {
-			return ret == null ? null : DateTime.fromObject(ret);
+			return ret == null ? null : DateTime.fromObject(ret, undefined, defaultToEnd);
 		}
 	}
 	
@@ -1250,7 +1266,7 @@ class DateTime {
 		let ret;
 		
 		if (split.length === 1) {
-			let parse = DateTime.parse(dateString, true, filterIncludeEnding, true, std, locale, globalizationPath);
+			let parse = DateTime.parse(dateString, true, filterIncludeEnding, true, std, locale, globalizationPath, split[0].includes('까지'));
 			
 			ret = {
 				parse: {
@@ -1271,7 +1287,7 @@ class DateTime {
 			let {
 				parse: rightParse,
 				string: rightFString,
-			} = DateTime.parse(right, true, filterIncludeEnding, false, std, locale, globalizationPath);
+			} = DateTime.parse(right, true, filterIncludeEnding, false, std, locale, globalizationPath, true);
 			
 			let leftDT = leftParse == null ? null : DateTime.fromObject(leftParse);
 			let rightDT = rightParse == null ? null : DateTime.fromObject(rightParse);

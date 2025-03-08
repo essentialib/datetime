@@ -350,8 +350,9 @@ export declare class DateTime {
 	 * 일반 객체로부터 DateTime 객체를 생성합니다.
 	 * @param datetimeObject
 	 * @param {DateTime} standard 기준이 되는 DateTime 객체, `datetimeObject`에서 빈 값은 `standard`의 값을 따릅니다.
+	 * @param defaultToEnd 기준을 끝내는 것으로 잡을 지 여부 (e.g. 12시 3분 -> 12시 3분 59초 999ms)
 	 */
-	static fromObject(datetimeObject: SetDateTimeTemplate, standard?: DateTime | SetDateTimeTemplate): DateTime;
+	static fromObject(datetimeObject: SetDateTimeTemplate, standard?: DateTime | SetDateTimeTemplate, defaultToEnd?: boolean): DateTime;
 	
 	/**
 	 * DateTime 객체의 덧셈 연산입니다.
@@ -406,7 +407,22 @@ export declare class DateTime {
 	 * @param millisecond 밀리초
 	 */
 	static at(hour: number, minute?: number, second?: number, millisecond?: number): DateTime;
-	
+
+	/**
+	 * 시간을 설정합니다.
+	 * @param hour 시
+	 * @param minute 분
+	 * @param second 초
+	 * @param millisecond 밀리초
+	 */
+	at(hour: number, minute?: number, second?: number, millisecond?: number): DateTime;
+
+	/**
+	 * 시간을 설정합니다.
+	 * @param time 시간
+	 */
+	at(time: Time): DateTime;
+
 	/**
 	 * 년도를 설정합니다.
 	 * @param year 년도
@@ -464,8 +480,9 @@ export declare class DateTime {
 	 * @param std 기준이 되는 DateTime 객체
 	 * @param locale 로케일
 	 * @param globalizationPath globalization 폴더의 경로
+	 * @param defaultToEnd 기준을 끝내는 것으로 잡을 지 여부 (e.g. 12시 3분 -> 12시 3분 59초 999ms)
 	 */
-	static parse(dateString: string, getString: true, filterIncludeEnding?: boolean = true, trim?: boolean = true, std?: DateTime = DateTime.now(), locale?: string, globalizationPath?: string): {
+	static parse(dateString: string, getString: true, filterIncludeEnding?: boolean = true, trim?: boolean = true, std?: DateTime = DateTime.now(), locale?: string, globalizationPath?: string, defaultToEnd?: boolean): {
 		parse: DateTime | undefined, string: string
 	};
 	
@@ -478,8 +495,9 @@ export declare class DateTime {
 	 * @param std 기준이 되는 DateTime 객체
 	 * @param locale 로케일
 	 * @param globalizationPath globalization 폴더의 경로
+	 * @param defaultToEnd 기준을 끝내는 것으로 잡을 지 여부 (e.g. 12시 3분 -> 12시 3분 59초 999ms)
 	 */
-	static parse(dateString: string, getString?: false, filterIncludeEnding?: boolean = true, trim?: boolean = true, std?: DateTime = DateTime.now(), locale?: string, globalizationPath?: string): DateTime | undefined;
+	static parse(dateString: string, getString?: false, filterIncludeEnding?: boolean = true, trim?: boolean = true, std?: DateTime = DateTime.now(), locale?: string, globalizationPath?: string, defaultToEnd?: boolean): DateTime | undefined;
 	
 	/**
 	 * 문자열에서 날짜를 추출합니다. 기준은 현재 시간입니다.

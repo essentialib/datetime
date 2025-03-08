@@ -25,7 +25,8 @@ var IS_DIST = true;
 var $D = !IS_DIST ? global.Date : Date;
 var getCultureInfo = function getCultureInfo(locale, globalizationPath) {
   if (IS_DIST) {
-    var localePath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + '/' + globalizationPath + "/".concat(locale, ".json");
+    var MSGBOT = com.xfl.msgbot.utils.SharedVar.Companion.getBotsPath().split('/').slice(0, -1).join('/');
+    var localePath = "".concat(MSGBOT, "/global_modules/").concat(globalizationPath, "/").concat(locale, ".json");
     var ret = JSON.parse(FileStream.read(localePath));
     if (ret == null) {
       throw Error("Invalid Locale ".concat(locale, ". (").concat(localePath, " is not exist)"));
@@ -686,6 +687,14 @@ var DateTime = /*#__PURE__*/function () {
       return this.timestamp() < other.timestamp();
     }
   }, {
+    key: "at",
+    value: function at(hour, minute, second, millisecond) {
+      var dt = new DateTime();
+      dt.date = this.date;
+      if (hour instanceof Time) dt.time = hour;else dt.time = new Time(hour, minute, second, millisecond);
+      return dt;
+    }
+  }, {
     key: "_parse",
     value: function _parse(dateString) {
       var getString = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -790,6 +799,7 @@ var DateTime = /*#__PURE__*/function () {
     value: function fromObject(datetimeObject) {
       var _standard$year, _standard$month, _standard$day, _standard$hour, _standard$minute, _standard$second, _standard$millisecond;
       var standard = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+      var defaultToEnd = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       var now = new DateTime();
       var ret = {};
       ret.year = datetimeObject.year;
@@ -801,12 +811,13 @@ var DateTime = /*#__PURE__*/function () {
       ret.millisecond = datetimeObject.millisecond;
       var defaults = {
         year: standard ? (_standard$year = standard.year) !== null && _standard$year !== void 0 ? _standard$year : now.year : now.year,
-        month: standard ? (_standard$month = standard.month) !== null && _standard$month !== void 0 ? _standard$month : now.month : 1,
+        month: standard ? (_standard$month = standard.month) !== null && _standard$month !== void 0 ? _standard$month : now.month : defaultToEnd ? 12 : 1,
         day: standard ? (_standard$day = standard.day) !== null && _standard$day !== void 0 ? _standard$day : now.day : 1,
-        hour: standard ? (_standard$hour = standard.hour) !== null && _standard$hour !== void 0 ? _standard$hour : now.hour : 0,
-        minute: standard ? (_standard$minute = standard.minute) !== null && _standard$minute !== void 0 ? _standard$minute : now.minute : 0,
-        second: standard ? (_standard$second = standard.second) !== null && _standard$second !== void 0 ? _standard$second : now.second : 0,
-        millisecond: standard ? (_standard$millisecond = standard.millisecond) !== null && _standard$millisecond !== void 0 ? _standard$millisecond : now.millisecond : 0
+        // defaultToEnd 따로 처리
+        hour: standard ? (_standard$hour = standard.hour) !== null && _standard$hour !== void 0 ? _standard$hour : now.hour : defaultToEnd ? 23 : 0,
+        minute: standard ? (_standard$minute = standard.minute) !== null && _standard$minute !== void 0 ? _standard$minute : now.minute : defaultToEnd ? 59 : 0,
+        second: standard ? (_standard$second = standard.second) !== null && _standard$second !== void 0 ? _standard$second : now.second : defaultToEnd ? 59 : 0,
+        millisecond: standard ? (_standard$millisecond = standard.millisecond) !== null && _standard$millisecond !== void 0 ? _standard$millisecond : now.millisecond : defaultToEnd ? 999 : 0
       };
       var units = ['year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond'];
 
@@ -825,8 +836,9 @@ var DateTime = /*#__PURE__*/function () {
             (_ret$_units$i = ret[_units$i = units[i]]) !== null && _ret$_units$i !== void 0 ? _ret$_units$i : ret[_units$i] = (standard !== null && standard !== void 0 ? standard : now)[units[i]];
           }
           for (var _i2 = x; _i2 < units.length; _i2++) {
-            var _units$_i, _ret$_units$_i;
-            (_ret$_units$_i = ret[_units$_i = units[_i2]]) !== null && _ret$_units$_i !== void 0 ? _ret$_units$_i : ret[_units$_i] = defaults[units[_i2]];
+            var _units$_i, _ret$_units$_i, _units$_i2, _ret$_units$_i2;
+            if (units[_i2] === "day" && defaultToEnd) (_ret$_units$_i = ret[_units$_i = units[_i2]]) !== null && _ret$_units$_i !== void 0 ? _ret$_units$_i : ret[_units$_i] = this.lengthOfMonth(ret.year, ret.month); // todo: 버그 날 소지 매우 많음. ret.year가 float 라던가 null이라던가...
+            else (_ret$_units$_i2 = ret[_units$_i2 = units[_i2]]) !== null && _ret$_units$_i2 !== void 0 ? _ret$_units$_i2 : ret[_units$_i2] = defaults[units[_i2]];
           }
           find = true;
           break;
@@ -905,6 +917,7 @@ var DateTime = /*#__PURE__*/function () {
       var std = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : DateTime.now();
       var locale = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 'ko-KR';
       var globalizationPath = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : DateTime.globalizationPath;
+      var defaultToEnd = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : false;
       var cultureInfo = getCultureInfo(locale, globalizationPath);
       var replaces = _objectEntries(cultureInfo['replaces']);
       replaces.sort(function (a, b) {
@@ -1079,10 +1092,10 @@ var DateTime = /*#__PURE__*/function () {
           // '아침 9시' 라고 했으면 위에서 '오전'으로 이미 필터링 됨. 즉, 이건 '아침'만 있는 경우임.
           filtering('아침');
           day = std.gt({
-            hour: 7,
+            hour: 8,
             minute: 30
           }) ? std.day + 1 : std.day;
-          hour = 7;
+          hour = 8;
           minute = 30;
         } else if (dateString.indexOf('정오') !== -1 && idx === -1) {
           filtering('정오');
@@ -1198,7 +1211,7 @@ var DateTime = /*#__PURE__*/function () {
           if (_unit === '주') {
             var _ret$day2;
             ret['day'] = ((_ret$day2 = ret['day']) !== null && _ret$day2 !== void 0 ? _ret$day2 : 0) + diff_num * 7;
-            ret['day'] += 0 - (std.weekday - 1); // '다음 주' -> '다음 주 월요일'로 자동매칭
+            ret['day'] += (defaultToEnd ? 6 : 0) - (std.weekday - 1); // '다음 주' -> '다음 주 월요일' 로 자동매칭 defaultToEnd가 true면 일요일로.
           } else {
             var _ret$unitMap$_unit;
             ret[unitMap[_unit]] = ((_ret$unitMap$_unit = ret[unitMap[_unit]]) !== null && _ret$unitMap$_unit !== void 0 ? _ret$unitMap$_unit : 0) + diff_num;
@@ -1294,14 +1307,15 @@ var DateTime = /*#__PURE__*/function () {
       var std = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : DateTime.now();
       var locale = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 'ko-KR';
       var globalizationPath = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : DateTime.globalizationPath;
-      var ret = DateTime._parse(dateString, getString, filterIncludeEnding, trim, std, locale);
+      var defaultToEnd = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : false;
+      var ret = DateTime._parse(dateString, getString, filterIncludeEnding, trim, std, locale, globalizationPath, defaultToEnd);
       if (getString) {
         return {
-          parse: ret.parse == null ? null : DateTime.fromObject(ret.parse),
+          parse: ret.parse == null ? null : DateTime.fromObject(ret.parse, undefined, defaultToEnd),
           string: ret.string
         };
       } else {
-        return ret == null ? null : DateTime.fromObject(ret);
+        return ret == null ? null : DateTime.fromObject(ret, undefined, defaultToEnd);
       }
     }
   }, {
@@ -1315,7 +1329,7 @@ var DateTime = /*#__PURE__*/function () {
       var split = dateString.split('부터');
       var ret;
       if (split.length === 1) {
-        var parse = DateTime.parse(dateString, true, filterIncludeEnding, true, std, locale, globalizationPath);
+        var parse = DateTime.parse(dateString, true, filterIncludeEnding, true, std, locale, globalizationPath, split[0].includes('까지'));
         ret = {
           parse: {
             from: split[0].includes('까지') ? std : parse.parse,
@@ -1329,7 +1343,7 @@ var DateTime = /*#__PURE__*/function () {
         var _DateTime$parse = DateTime.parse(left, true, filterIncludeEnding, false, std, locale, globalizationPath),
           leftParse = _DateTime$parse.parse,
           leftFString = _DateTime$parse.string;
-        var _DateTime$parse2 = DateTime.parse(right, true, filterIncludeEnding, false, std, locale, globalizationPath),
+        var _DateTime$parse2 = DateTime.parse(right, true, filterIncludeEnding, false, std, locale, globalizationPath, true),
           rightParse = _DateTime$parse2.parse,
           rightFString = _DateTime$parse2.string;
         var leftDT = leftParse == null ? null : DateTime.fromObject(leftParse);
@@ -2090,7 +2104,7 @@ var DateTime = /*#__PURE__*/function () {
   }]);
   return DateTime;
 }();
-_defineProperty(DateTime, "globalizationPath", 'msgbot/global_modules/DateTime/globalization');
+_defineProperty(DateTime, "globalizationPath", 'DateTime/globalization');
 exports.DateTime = DateTime;
 exports.Date = Date;
 exports.Time = Time;

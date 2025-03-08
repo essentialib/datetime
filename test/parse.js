@@ -54,7 +54,6 @@ parseDuration = string => {
 // parse`이번 주` // ✅
 // parse`이번 달` // ✅
 // parse`이번 주 일요일` // ✅
-parse`보름`	// todo
 // parse`오늘`   // ✅
 // parse`어제`   // ✅
 // parse`내일`   // ✅
@@ -95,13 +94,15 @@ parse`보름`	// todo
 // parseDuration`다음 주부터 2달 후 까지`;	// ✅
 // parseDuration`금요일부터 다음 주 일요일까지`;	// ✅
 // parseDuration`내일부터 어제까지`	// ✅
-// parseDuration`3월 3일부터 다음 주 까지`	// ✅
+// parseDuration`3월 3일부터 다음 주 까지`	// ❌
 // parse`이번주 일요일`	// ✅
-parse`이번주 일요일`	// ✅
-parse`이번주 일요일까지`	// ✅
-parseDuration`이번주 일요일까지`	// ✅
+// parse`이번주 일요일`	// ✅
+// parse`이번주 일요일까지`	// ✅
+// parseDuration`이번주 일요일까지`	// ✅
 // parseDuration`오늘부터 이번주 일요일까지`	// ✅
 // parseDuration`오늘부터 일요일까지`	// ✅
+// parseDuration`모레까지`	// ✅
+// parseDuration`ㅇㅇ`
 
 // // 기준 날짜에서 다시 parse
 // datetime = DateTime.parse('이번주 일요일');
